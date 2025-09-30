@@ -1,4 +1,4 @@
-# Uni-Chat
+# UniChat
 
 by:
 - Infiel Ruiz
