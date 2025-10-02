@@ -24,7 +24,7 @@ namespace Unichat
             MySqlCommand comand;
             MySqlDataReader reader = null; // Para evitar conflictos con la variable.
 
-            conn = new MySql.Data.MySqlClient.MySqlConnection("server=127.0.0.1;uid=root;pwd=root;database=unichat"); //Crea el objeto
+            conn = new MySql.Data.MySqlClient.MySqlConnection("server=127.0.0.1;uid=root;pwd=rootroot;database=unichat"); //Crea el objeto
             conn.Open();
 
             comand = new MySqlCommand("Select * from users order by username", conn);
