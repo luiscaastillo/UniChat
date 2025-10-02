@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using MySql.Data.MySqlClient; //Conexion con la Base de datos
 using Mysqlx.Crud;
+using UniChat;
 
 namespace Unichat
 {
@@ -23,7 +24,7 @@ namespace Unichat
             MySqlCommand comand;
             MySqlDataReader reader = null; // Para evitar conflictos con la variable.
 
-            conn = new MySql.Data.MySqlClient.MySqlConnection("server=127.0.0.1;uid=root;pwd=rootroot;database=unichat"); //Crea el objeto
+            conn = new MySql.Data.MySqlClient.MySqlConnection("server=127.0.0.1;uid=root;pwd=root;database=unichat"); //Crea el objeto
             conn.Open();
 
             comand = new MySqlCommand("Select * from users order by username", conn);
@@ -46,7 +47,14 @@ namespace Unichat
         private void Bconectar_Click(object sender, EventArgs e) //boton para abrir otro form (chat)
         {
             MessageBox.Show("La base de datos ha sido conectada"); //aun en pruebas
+            
+            FormChat chatForm = new FormChat();
+            chatForm.Show();
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
