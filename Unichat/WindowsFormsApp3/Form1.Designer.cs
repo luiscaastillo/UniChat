@@ -35,17 +35,18 @@
             // listBox1
             // 
             this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 16;
-            this.listBox1.Location = new System.Drawing.Point(193, 165);
+            this.listBox1.Location = new System.Drawing.Point(145, 134);
+            this.listBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(372, 132);
+            this.listBox1.Size = new System.Drawing.Size(280, 108);
             this.listBox1.TabIndex = 0;
             // 
             // Bconectar
             // 
-            this.Bconectar.Location = new System.Drawing.Point(256, 61);
+            this.Bconectar.Location = new System.Drawing.Point(192, 50);
+            this.Bconectar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Bconectar.Name = "Bconectar";
-            this.Bconectar.Size = new System.Drawing.Size(269, 56);
+            this.Bconectar.Size = new System.Drawing.Size(202, 46);
             this.Bconectar.TabIndex = 1;
             this.Bconectar.Text = "Conectar";
             this.Bconectar.UseVisualStyleBackColor = true;
@@ -53,13 +54,15 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(600, 366);
             this.Controls.Add(this.Bconectar);
             this.Controls.Add(this.listBox1);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Form1";
             this.Text = "Conexion a Base de datos";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
 
         }
