@@ -1,6 +1,4 @@
-﻿using MySql.Data.MySqlClient; //Conexion con la Base de datos
-using Mysqlx.Crud;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,73 +7,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
-using UniChat;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using MySql.Data.MySqlClient; //Conexion con la Base de datos
+using Mysqlx.Crud;
+using Unichat;
 
-namespace Unichat
+namespace UniChat
 {
-    public partial class Form1 : Form
+    public partial class FormRegister : Form
     {
-        
-        public Form1()
+        private Form1 _form1; // Variable para almacenar la referencia a Form1
+        public FormRegister(Form1 form1)
         {
             InitializeComponent();
+
+            _form1 = form1; //Para llamar a la FormPrincipal
 
             //Colores-fuentes de ventanas y botones
             this.BackgroundImage = Image.FromFile("back3.jpg");
             this.BackgroundImageLayout = ImageLayout.Stretch;
-
+         
+            //Panel de Fondo
             panel1.BackColor = Color.FromArgb(25, 28, 31);
-            //panel1.BackColor = Color.FromArgb(39, 45, 159); ESTE COLOR??
 
-            //Colores y fuentes de los labels
-            labelUsuario.ForeColor = Color.White;
+            //Colores de los labels
+            label1.BackColor = Color.FromArgb(25, 28, 31);
+            label1.ForeColor = Color.White;
             labelUsuario.BackColor = Color.FromArgb(25, 28, 31);
-            labelContra.ForeColor = Color.White;
+            labelUsuario.ForeColor = Color.White;
             labelContra.BackColor = Color.FromArgb(25, 28, 31);
-            labelCuenta.ForeColor = Color.White;
-            labelCuenta.BackColor = Color.FromArgb(25, 28, 31);
-            linkRegistrarse.BackColor = Color.FromArgb(25, 28, 31);
+            labelContra.ForeColor = Color.White;
+            label4.ForeColor = Color.White;
 
-            //Config de los textBox Usuario y Contra
+            //TextBox de usuario y contraseña
             textBoxUsuario.Font = new Font("Century Gothic", 9, FontStyle.Regular);
             textBoxContra.Font = new Font("Century Gothic", 9, FontStyle.Regular);
-
-            //Boton Conectar
-            Bconectar.Image = Image.FromFile("iniciar.png");
+            Bconectar.Image = Image.FromFile("registrar.png");
             Bconectar.SizeMode = PictureBoxSizeMode.StretchImage;
 
-            //Conexión con la base
-            MySqlConnection conn;
-            MySqlCommand comand;
-            MySqlDataReader reader = null; // Para evitar conflictos con la variable.
-
-            conn = new MySql.Data.MySqlClient.MySqlConnection("server=127.0.0.1;uid=root;pwd=rootroot;database=unichat"); //Crea el objeto
-            conn.Open();
-
-            comand = new MySqlCommand("Select * from users order by username", conn);
-            reader = comand.ExecuteReader();
-
-            if (reader != null && reader.HasRows) // Check if reader is not null before accessing HasRows
-            {
-                while (reader.Read())
-                {
-                    //Aqui se obtienen los datos de la base de datos
-                    string item = reader["id_user"].ToString() + " - " +
-                        reader["username"].ToString() + " - " + reader["passwd"] + " - " + reader["creationDate"];
-                }
-            }
-
-            reader?.Close(); // Use null-conditional operator to safely close the reader
-            conn.Close();
-
+            //Aplicar cuando se cierre el FormRegister, se cierre toda la aplicación
+            this.FormClosed += (s, e) => Application.Exit();
         }
-    
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            this.BackColor = Color.FromArgb(83, 73, 76);
 
+        private void FormRegister_Load(object sender, EventArgs e)
+        {
             //Cambiar el texto y color de los TextBox al iniciar
             textBoxUsuario.Text = "Ingrese nombre de usuario";
             textBoxUsuario.ForeColor = Color.Gray;
@@ -87,43 +61,7 @@ namespace Unichat
             textBoxContra.ForeColor = Color.Gray;
             textBoxContra.Enter += textBoxContra_Enter;
             textBoxContra.Leave += textBoxContra_Leave;
-
         }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-        
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            FormRegister registroForm = new FormRegister(this);
-            registroForm.Show();
-
-            //Oculta Form1 cuando se abre el FormRegister
-            this.Hide();
-        }
-
-        private void textBoxUsuario_TextChanged(object sender, EventArgs e)
-        {
-         
-        }
-
 
         private void textBoxUsuario_Enter(object sender, EventArgs e)
         {
@@ -160,6 +98,23 @@ namespace Unichat
                 textBoxContra.ForeColor = Color.Gray;
             }
         }
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            //Abrir Form1 (Login) otra vez, la que ya existe y no crear una nueva
+            _form1.Show();
+
+            this.Hide(); //Para ocultar la ventana
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
 
         private void textBoxContra_TextChanged(object sender, EventArgs e)
         {
@@ -168,7 +123,7 @@ namespace Unichat
 
         private void Bconectar_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("LogIn Exitoso"); //Implementar la validación de user y contraseña
+            MessageBox.Show("Registro Exitoso"); //Se registra el usuario
 
             //Aqui se abre la ventana de chat
             FormChat chatForm = new FormChat();

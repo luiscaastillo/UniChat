@@ -131,3 +131,5 @@ C:\Repo\UniChat\Unichat\WindowsFormsApp3\obj\Debug\WindowsFormsApp3.csproj.CoreC
 C:\Repo\UniChat\Unichat\WindowsFormsApp3\obj\Debug\WindowsF.90B8DF9B.Up2Date
 C:\Repo\UniChat\Unichat\WindowsFormsApp3\obj\Debug\WindowsFormsApp3.exe
 C:\Repo\UniChat\Unichat\WindowsFormsApp3\obj\Debug\WindowsFormsApp3.pdb
+C:\Repo\UniChat\Unichat\WindowsFormsApp3\obj\Debug\UniChat.FormRegister.resources
+C:\Repo\UniChat\Unichat\WindowsFormsApp3\obj\Debug\Unichat.FormNuevaSala.resources
