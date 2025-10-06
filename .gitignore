@@ -2,3 +2,6 @@
 .vs
 UniChat/.vs
 UniChat/WindowsFormsApp3/obj
+.DS_Store
+UniChat/.DS_Store
+UniChat/WindowsFormsApp3/.DS_Store
