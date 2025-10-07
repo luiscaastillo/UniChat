@@ -1,4 +1,8 @@
-﻿using System;
+﻿using BCrypt.Net;
+using MySql.Data.MySqlClient;
+using Mysqlx.Crud;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,8 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MySql.Data.MySqlClient; //Conexion con la Base de datos
-using Mysqlx.Crud;
 using Unichat;
 
 namespace UniChat
@@ -108,7 +110,7 @@ namespace UniChat
             //Abrir Form1 (Login) otra vez, la que ya existe y no crear una nueva
             _form1.Show();
 
-            this.Hide(); //Para ocultar la ventana
+            this.Hide();
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -123,14 +125,78 @@ namespace UniChat
 
         private void Bconectar_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Registro Exitoso"); //Se registra el usuario
+            try
+            {
+                string connectionString = DbConfig.connectionString;
+                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                {
+                    string username = textBoxUsuario.Text;
+                    string password = textBoxContra.Text;
 
-            //Aqui se abre la ventana de chat
-            FormChat chatForm = new FormChat();
-            chatForm.Show();
+                    // Validates input fields
+                    if (string.IsNullOrWhiteSpace(username) || username == "Ingrese nombre de usuario")
+                    {
+                        MessageBox.Show("Ingrese un nombre de usuario válido.");
+                        return;
+                    }
 
-            //Oculta Form1 cuando se abre el FormRegister
-            this.Hide();
+                    if (string.IsNullOrWhiteSpace(password) || password == "Ingrese su contraseña")
+                    {
+                        MessageBox.Show("Ingrese una contraseña válida.");
+                        return;
+                    }
+
+                    // Open connection
+                    connection.Open();
+
+                    // Check if the username already exists
+                    string queryCheck = "SELECT COUNT(*) FROM users WHERE username = @username";
+                    using (MySqlCommand cmdCheck = new MySqlCommand(queryCheck, connection))
+                    {
+                        cmdCheck.Parameters.AddWithValue("@username", username);
+                        int userCount = Convert.ToInt32(cmdCheck.ExecuteScalar());
+
+                        if (userCount > 0)
+                        {
+                            MessageBox.Show("El usuario ya existe.");
+                            return;
+                        }
+                    }
+
+                    // Hash the password before storing it
+                    string hashedPassword = PasswordManager.HashPassword(password);
+
+                    // Insert new user into the database with creation date
+                    string queryInsert = "INSERT INTO users (username, passwd, creationDate) VALUES (@username, @passwd, @creationDate)";
+                    using (MySqlCommand cmdInsert = new MySqlCommand(queryInsert, connection))
+                    {
+                        cmdInsert.Parameters.AddWithValue("@username", username);
+                        cmdInsert.Parameters.AddWithValue("@passwd", hashedPassword);
+                        cmdInsert.Parameters.AddWithValue("@creationDate", DateTime.Now);
+
+                        int result = cmdInsert.ExecuteNonQuery();
+
+                        // Check if the insert was successful
+                        if (result > 0)
+                        {
+                            MessageBox.Show("Usuario registrado exitosamente.");
+
+                            // Open FormChat
+                            FormChat chatForm = new FormChat();
+                            chatForm.Show();
+
+                            // Hide FormRegister when FormChat opens
+                            this.Hide();
+                        }
+                    }
+                    // Close connection
+                    connection.Close();
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Error al registrar el usuario: " + ex.Message);
+            }
         }
     }
 }

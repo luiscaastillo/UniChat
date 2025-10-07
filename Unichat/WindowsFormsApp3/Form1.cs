@@ -12,12 +12,13 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using UniChat;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using BCrypt.Net;
 
 namespace Unichat
 {
+
     public partial class Form1 : Form
-    {
-        
+    {        
         public Form1()
         {
             InitializeComponent();
@@ -45,30 +46,6 @@ namespace Unichat
             //Boton Conectar
             Bconectar.Image = Image.FromFile("iniciar.png");
             Bconectar.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            //Conexión con la base
-            MySqlConnection conn;
-            MySqlCommand comand;
-            MySqlDataReader reader = null; // Para evitar conflictos con la variable.
-
-            conn = new MySql.Data.MySqlClient.MySqlConnection("server=127.0.0.1;uid=root;pwd=rootroot;database=unichat"); //Crea el objeto
-            conn.Open();
-
-            comand = new MySqlCommand("Select * from users order by username", conn);
-            reader = comand.ExecuteReader();
-
-            if (reader != null && reader.HasRows) // Check if reader is not null before accessing HasRows
-            {
-                while (reader.Read())
-                {
-                    //Aqui se obtienen los datos de la base de datos
-                    string item = reader["id_user"].ToString() + " - " +
-                        reader["username"].ToString() + " - " + reader["passwd"] + " - " + reader["creationDate"];
-                }
-            }
-
-            reader?.Close(); // Use null-conditional operator to safely close the reader
-            conn.Close();
 
         }
     
@@ -168,14 +145,60 @@ namespace Unichat
 
         private void Bconectar_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("LogIn Exitoso"); //Implementar la validación de user y contraseña
+            try
+            {
+                string connectionString = DbConfig.connectionString;
+                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                {
+                    //Open connection
+                    connection.Open();
+                    string username = textBoxUsuario.Text;
+                    string password = textBoxContra.Text;
 
-            //Aqui se abre la ventana de chat
-            FormChat chatForm = new FormChat();
-            chatForm.Show();
-
-            //Oculta Form1 cuando se abre el FormRegister
-            this.Hide();
+                    // Prepare the SQL query to get the hashed password for the given username
+                    string query = "SELECT passwd FROM users WHERE username = @username";
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@username", username);
+                        object result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            string storedHashedPassword = result.ToString();
+                            
+                            // Check if it's a valid BCrypt hash (starts with $)
+                            if (!storedHashedPassword.StartsWith("$"))
+                            {
+                                MessageBox.Show("Su contraseña debe ser actualizada. Contacte al administrador.");
+                                return;
+                            }
+                            
+                            if (PasswordManager.VerifyPassword(password, storedHashedPassword))
+                            {
+                                MessageBox.Show("LogIn Exitoso");
+                                //Open chat window
+                                FormChat chatForm = new FormChat();
+                                chatForm.Show();
+                                //Hide Form1 when FormChat opens
+                                this.Hide();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Contraseña incorrecta.");
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("El usuario no existe.");
+                        }
+                    }
+                    //Close connection
+                    connection.Close();
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Error al registrar el usuario: " + ex.Message);
+            }
         }
     }
 }
