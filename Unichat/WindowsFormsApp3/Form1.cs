@@ -169,15 +169,11 @@ namespace Unichat
         {
             try
             {
-                string connectionString = DbConfig.connectionString;
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (MySqlConnection connection = DbConfig.GetOpenConnection())
                 {
-                    //Open connection
-                    connection.Open();
                     string username = textBoxUsuario.Text;
                     string password = textBoxContra.Text;
 
-                    // Prepare the SQL query to get the hashed password for the given username
                     string query = "SELECT passwd FROM users WHERE username = @username";
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
@@ -186,21 +182,18 @@ namespace Unichat
                         if (result != null)
                         {
                             string storedHashedPassword = result.ToString();
-                            
-                            // Check if it's a valid BCrypt hash (starts with $)
+
                             if (!storedHashedPassword.StartsWith("$"))
                             {
                                 MessageBox.Show("Su contraseña debe ser actualizada. Contacte al administrador.");
                                 return;
                             }
-                            
+
                             if (PasswordManager.VerifyPassword(password, storedHashedPassword))
                             {
                                 MessageBox.Show("LogIn Exitoso");
-                                //Open chat window
                                 FormChat chatForm = new FormChat();
                                 chatForm.Show();
-                                //Hide Form1 when FormChat opens
                                 this.Hide();
                             }
                             else
@@ -215,8 +208,6 @@ namespace Unichat
                             MessageBox.Show("El usuario no existe.");
                         }
                     }
-                    //Close connection
-                    connection.Close();
                 }
             }
             catch (MySqlException ex)
@@ -225,7 +216,8 @@ namespace Unichat
             }
         }
 
-        
-        
+
+
+
     }
 }

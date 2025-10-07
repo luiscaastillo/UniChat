@@ -48,6 +48,7 @@ namespace UniChat
             //TextBox de usuario y contraseña
             textBoxUsuario.Font = new Font("Century Gothic", 9, FontStyle.Regular);
             textBoxContra.Font = new Font("Century Gothic", 9, FontStyle.Regular);
+            textBoxRecontra.Font = new Font("Century Gothic", 9, FontStyle.Regular);
             Bconectar.Image = Image.FromFile("registrar.png");
             Bconectar.SizeMode = PictureBoxSizeMode.StretchImage;
 
@@ -68,6 +69,11 @@ namespace UniChat
             textBoxContra.ForeColor = Color.Gray;
             textBoxContra.Enter += textBoxContra_Enter;
             textBoxContra.Leave += textBoxContra_Leave;
+
+            textBoxRecontra.Text = "Ingrese nuevamente su contraseña";
+            textBoxRecontra.ForeColor = Color.Gray;
+            textBoxRecontra.Enter += textBoxRecontra_Enter;
+            textBoxRecontra.Leave += textBoxRecontra_Leave;
 
         }
 
@@ -106,6 +112,24 @@ namespace UniChat
                 textBoxContra.ForeColor = Color.Gray;
             }
         }
+
+        private void textBoxRecontra_Enter(object sender, EventArgs e)
+        {
+            if (textBoxRecontra.Text == "Ingrese nuevamente su contraseña" || textBoxRecontra.Text == "Vuelva a ingresar su contraseña")
+            {
+                textBoxRecontra.Text = "";
+                textBoxRecontra.ForeColor = Color.Black;
+            }
+
+        }
+        private void textBoxRecontra_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBoxRecontra.Text))
+            {
+                textBoxRecontra.Text = "Ingrese nuevamente su contraseña";
+                textBoxRecontra.ForeColor = Color.Gray;
+            }
+        }
         private void label4_Click(object sender, EventArgs e)
         {
 
@@ -133,29 +157,38 @@ namespace UniChat
         {
             try
             {
-                string connectionString = DbConfig.connectionString;
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                string username = textBoxUsuario.Text;
+                string password = textBoxContra.Text;
+                string repassword = textBoxRecontra.Text;
+
+                // Validación de campos vacíos y coincidencia de contraseñas
+                if (string.IsNullOrWhiteSpace(username) || username == "Ingrese nombre de usuario")
                 {
-                    string username = textBoxUsuario.Text;
-                    string password = textBoxContra.Text;
+                    MessageBox.Show("Ingrese un nombre de usuario válido.");
+                    return;
+                }
 
-                    // Validates input fields
-                    if (string.IsNullOrWhiteSpace(username) || username == "Ingrese nombre de usuario")
-                    {
-                        MessageBox.Show("Ingrese un nombre de usuario válido.");
-                        return;
-                    }
+                if (string.IsNullOrWhiteSpace(password) || password == "Ingrese su contraseña")
+                {
+                    MessageBox.Show("Ingrese una contraseña válida.");
+                    return;
+                }
 
-                    if (string.IsNullOrWhiteSpace(password) || password == "Ingrese su contraseña")
-                    {
-                        MessageBox.Show("Ingrese una contraseña válida.");
-                        return;
-                    }
+                if (string.IsNullOrWhiteSpace(repassword) || repassword == "Ingrese nuevamente su contraseña")
+                {
+                    MessageBox.Show("Repita la contraseña.");
+                    return;
+                }
 
-                    // Open connection
-                    connection.Open();
+                if (password != repassword)
+                {
+                    MessageBox.Show("Las contraseñas no coinciden.");
+                    return;
+                }
 
-                    // Check if the username already exists
+                using (MySqlConnection connection = DbConfig.GetOpenConnection())
+                {
+                    // Verificar si el usuario ya existe
                     string queryCheck = "SELECT COUNT(*) FROM users WHERE username = @username";
                     using (MySqlCommand cmdCheck = new MySqlCommand(queryCheck, connection))
                     {
@@ -169,10 +202,10 @@ namespace UniChat
                         }
                     }
 
-                    // Hash the password before storing it
+                    // Hashear la contraseña antes de almacenarla
                     string hashedPassword = PasswordManager.HashPassword(password);
 
-                    // Insert new user into the database with creation date
+                    // Insertar nuevo usuario
                     string queryInsert = "INSERT INTO users (username, passwd, creationDate) VALUES (@username, @passwd, @creationDate)";
                     using (MySqlCommand cmdInsert = new MySqlCommand(queryInsert, connection))
                     {
@@ -181,22 +214,15 @@ namespace UniChat
                         cmdInsert.Parameters.AddWithValue("@creationDate", DateTime.Now);
 
                         int result = cmdInsert.ExecuteNonQuery();
-
-                        // Check if the insert was successful
-                        if (result > 0)
+                        
+                        if (result > 0) //sd
                         {
                             MessageBox.Show("Usuario registrado exitosamente.");
-
-                            // Open FormChat
                             FormChat chatForm = new FormChat();
                             chatForm.Show();
-
-                            // Hide FormRegister when FormChat opens
                             this.Hide();
                         }
                     }
-                    // Close connection
-                    connection.Close();
                 }
             }
             catch (MySqlException ex)
@@ -205,9 +231,14 @@ namespace UniChat
             }
         }
 
+
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
         }
     }
 }
