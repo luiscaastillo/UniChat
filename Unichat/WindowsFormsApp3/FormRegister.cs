@@ -34,11 +34,16 @@ namespace UniChat
             //Colores de los labels
             label1.BackColor = Color.FromArgb(25, 28, 31);
             label1.ForeColor = Color.White;
+            label1.Font = new Font("OCR A Extended", 20.25F, FontStyle.Bold);
             labelUsuario.BackColor = Color.FromArgb(25, 28, 31);
             labelUsuario.ForeColor = Color.White;
+            labelUsuario.Font = new Font("OCR A Extended", 16, FontStyle.Bold);
             labelContra.BackColor = Color.FromArgb(25, 28, 31);
             labelContra.ForeColor = Color.White;
+            labelContra.Font = new Font("OCR A Extended", 16, FontStyle.Bold);
             label4.ForeColor = Color.White;
+            label4.Font = new Font("Century Gothic", 9, FontStyle.Bold);
+            linkLogin.Font = new Font("Century Gothic", 9, FontStyle.Bold);
 
             //TextBox de usuario y contraseña
             textBoxUsuario.Font = new Font("Century Gothic", 9, FontStyle.Regular);
@@ -63,6 +68,7 @@ namespace UniChat
             textBoxContra.ForeColor = Color.Gray;
             textBoxContra.Enter += textBoxContra_Enter;
             textBoxContra.Leave += textBoxContra_Leave;
+
         }
 
         private void textBoxUsuario_Enter(object sender, EventArgs e)
@@ -197,6 +203,11 @@ namespace UniChat
             {
                 MessageBox.Show("Error al registrar el usuario: " + ex.Message);
             }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
