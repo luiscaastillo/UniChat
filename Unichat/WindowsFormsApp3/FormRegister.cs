@@ -110,7 +110,7 @@ namespace UniChat
             //Abrir Form1 (Login) otra vez, la que ya existe y no crear una nueva
             _form1.Show();
 
-            this.Hide(); //Para ocultar la ventana
+            this.Hide();
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -146,6 +146,7 @@ namespace UniChat
                         return;
                     }
 
+                    // Open connection
                     connection.Open();
 
                     // Check if the username already exists
@@ -165,12 +166,13 @@ namespace UniChat
                     // Hash the password before storing it
                     string hashedPassword = PasswordManager.HashPassword(password);
 
-                    // Insert new user into the database
-                    string queryInsert = "INSERT INTO users (username, passwd) VALUES (@username, @passwd)";
+                    // Insert new user into the database with creation date
+                    string queryInsert = "INSERT INTO users (username, passwd, creationDate) VALUES (@username, @passwd, @creationDate)";
                     using (MySqlCommand cmdInsert = new MySqlCommand(queryInsert, connection))
                     {
                         cmdInsert.Parameters.AddWithValue("@username", username);
                         cmdInsert.Parameters.AddWithValue("@passwd", hashedPassword);
+                        cmdInsert.Parameters.AddWithValue("@creationDate", DateTime.Now);
 
                         int result = cmdInsert.ExecuteNonQuery();
 
@@ -187,6 +189,8 @@ namespace UniChat
                             this.Hide();
                         }
                     }
+                    // Close connection
+                    connection.Close();
                 }
             }
             catch (MySqlException ex)

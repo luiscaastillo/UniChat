@@ -191,18 +191,14 @@ namespace Unichat
                             MessageBox.Show("El usuario no existe.");
                         }
                     }
+                    //Close connection
+                    connection.Close();
                 }
             }
             catch (MySqlException ex)
             {
                 MessageBox.Show("Error al registrar el usuario: " + ex.Message);
             }
-
-
-            MessageBox.Show("LogIn Exitoso"); //Implementar la validación de user y 
-
-            //Oculta Form1 cuando se abre el FormRegister
-            this.Hide();
         }
     }
 }
