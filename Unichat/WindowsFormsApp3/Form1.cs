@@ -18,7 +18,7 @@ namespace Unichat
 {
 
     public partial class Form1 : Form
-    {        
+    {
         public Form1()
         {
             InitializeComponent();
@@ -31,13 +31,22 @@ namespace Unichat
             //panel1.BackColor = Color.FromArgb(39, 45, 159); ESTE COLOR??
 
             //Colores y fuentes de los labels
+            label1.Font = new Font("OCR A Extended", 20.25F, FontStyle.Bold);
+
             labelUsuario.ForeColor = Color.White;
             labelUsuario.BackColor = Color.FromArgb(25, 28, 31);
+            labelUsuario.Font = new Font("OCR A Extended", 16, FontStyle.Bold);
+
             labelContra.ForeColor = Color.White;
             labelContra.BackColor = Color.FromArgb(25, 28, 31);
+            labelContra.Font = new Font("OCR A Extended", 16, FontStyle.Bold);
+
             labelCuenta.ForeColor = Color.White;
             labelCuenta.BackColor = Color.FromArgb(25, 28, 31);
+            labelCuenta.Font = new Font("Century Gothic", 9, FontStyle.Bold);
+
             linkRegistrarse.BackColor = Color.FromArgb(25, 28, 31);
+            linkRegistrarse.Font = new Font("Century Gothic", 9, FontStyle.Bold);
 
             //Config de los textBox Usuario y Contra
             textBoxUsuario.Font = new Font("Century Gothic", 9, FontStyle.Regular);
@@ -64,6 +73,8 @@ namespace Unichat
             textBoxContra.ForeColor = Color.Gray;
             textBoxContra.Enter += textBoxContra_Enter;
             textBoxContra.Leave += textBoxContra_Leave;
+
+            textBoxContra.KeyPress += textBoxContra_KeyPress;
 
         }
 
@@ -122,11 +133,12 @@ namespace Unichat
 
         private void textBoxContra_Enter(object sender, EventArgs e)
         {
-            if (textBoxContra.Text == "Ingrese su contraseña")
+            if (textBoxContra.Text == "Ingrese su contraseña" || textBoxContra.Text == "Vuelva a ingresar su contraseña")
             {
                 textBoxContra.Text = "";
                 textBoxContra.ForeColor = Color.Black;
             }
+
         }
 
         private void textBoxContra_Leave(object sender, EventArgs e)
@@ -137,6 +149,16 @@ namespace Unichat
                 textBoxContra.ForeColor = Color.Gray;
             }
         }
+
+        private void textBoxContra_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (textBoxContra.Text == "Ingrese su contraseña" || textBoxContra.Text == "Vuelva a ingresar su contraseña")
+            {
+                textBoxContra.Text = "";
+                textBoxContra.ForeColor = Color.Black;
+            }
+        }
+
 
         private void textBoxContra_TextChanged(object sender, EventArgs e)
         {
@@ -184,6 +206,8 @@ namespace Unichat
                             else
                             {
                                 MessageBox.Show("Contraseña incorrecta.");
+                                textBoxContra.Text = "Vuelva a ingresar su contraseña";
+                                textBoxContra.ForeColor = Color.Gray;
                             }
                         }
                         else
@@ -200,5 +224,8 @@ namespace Unichat
                 MessageBox.Show("Error al registrar el usuario: " + ex.Message);
             }
         }
+
+        
+        
     }
 }
