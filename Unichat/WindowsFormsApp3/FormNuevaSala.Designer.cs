@@ -39,9 +39,10 @@
             // 
             // textBoxSala
             // 
-            this.textBoxSala.Location = new System.Drawing.Point(78, 129);
+            this.textBoxSala.Location = new System.Drawing.Point(104, 159);
+            this.textBoxSala.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxSala.Name = "textBoxSala";
-            this.textBoxSala.Size = new System.Drawing.Size(200, 20);
+            this.textBoxSala.Size = new System.Drawing.Size(265, 22);
             this.textBoxSala.TabIndex = 0;
             // 
             // label1
@@ -49,9 +50,10 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("OCR A Extended", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.label1.Location = new System.Drawing.Point(12, 14);
+            this.label1.Location = new System.Drawing.Point(16, 17);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(282, 25);
+            this.label1.Size = new System.Drawing.Size(356, 32);
             this.label1.TabIndex = 3;
             this.label1.Text = "Creando nueva sala";
             this.label1.Click += new System.EventHandler(this.label1_Click);
@@ -60,37 +62,42 @@
             // 
             this.labelCrear.AutoSize = true;
             this.labelCrear.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCrear.Location = new System.Drawing.Point(63, 95);
+            this.labelCrear.Location = new System.Drawing.Point(84, 117);
+            this.labelCrear.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelCrear.Name = "labelCrear";
-            this.labelCrear.Size = new System.Drawing.Size(226, 19);
+            this.labelCrear.Size = new System.Drawing.Size(287, 23);
             this.labelCrear.TabIndex = 4;
             this.labelCrear.Text = "Escribe el nombre de tu sala";
             // 
             // BCrear
             // 
-            this.BCrear.Location = new System.Drawing.Point(83, 143);
+            this.BCrear.Location = new System.Drawing.Point(111, 176);
+            this.BCrear.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.BCrear.Name = "BCrear";
-            this.BCrear.Size = new System.Drawing.Size(119, 50);
+            this.BCrear.Size = new System.Drawing.Size(159, 62);
             this.BCrear.TabIndex = 5;
             this.BCrear.TabStop = false;
+            this.BCrear.Click += new System.EventHandler(this.BCrear_Click);
             // 
             // panelSala
             // 
             this.panelSala.Controls.Add(this.BCrear);
             this.panelSala.Controls.Add(this.label1);
-            this.panelSala.Location = new System.Drawing.Point(32, 12);
+            this.panelSala.Location = new System.Drawing.Point(43, 15);
+            this.panelSala.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.panelSala.Name = "panelSala";
-            this.panelSala.Size = new System.Drawing.Size(306, 211);
+            this.panelSala.Size = new System.Drawing.Size(408, 260);
             this.panelSala.TabIndex = 6;
             // 
             // FormNuevaSala
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(374, 235);
+            this.ClientSize = new System.Drawing.Size(499, 289);
             this.Controls.Add(this.labelCrear);
             this.Controls.Add(this.textBoxSala);
             this.Controls.Add(this.panelSala);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "FormNuevaSala";
             this.Text = "FormNuevaSala";
             this.Load += new System.EventHandler(this.FormNuevaSala_Load);

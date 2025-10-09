@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Unichat;
+using WindowsFormsApp3;
 
 namespace UniChat
 {
@@ -18,6 +19,8 @@ namespace UniChat
         public FormChat()
         {
             InitializeComponent();
+            string user = CurrentUser.Username;
+            MessageBox.Show("Usuario actual: " + user);
 
             //Colores-fuentes de ventanas y botones
             //AQUI NO MUEVAN NADA, PORFA
@@ -88,9 +91,7 @@ namespace UniChat
             textBoxMessage.KeyDown += textBoxMessage_KeyDown;
 
             //Implementación del TreeView
-            treeViewChats.Nodes.Clear(); // Limpiar nodos existentes
-            
-            // Agregar un nodo raíz con hijos
+            CargarChatsUsuario(treeViewChats);            
           
         }
         private void textBoxMessage_TextChanged(object sender, EventArgs e)
@@ -201,26 +202,71 @@ namespace UniChat
             Application.Exit();
         }
 
-        private void treeViewChats_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            //Agregar elementos
-            
-        }
 
-        private void BNewChat_Click(object sender, EventArgs e)
+        //Boton para crear un nuevo chat (Sala)
+        private void BNewChat_Click(object sender, EventArgs e) 
         {
-            //Aqui es para crear un nuevo chat o sala
             using (var formSala = new FormNuevaSala())
             {
                 if (formSala.ShowDialog() == DialogResult.OK)
                 {
                     string nombreSala = formSala.NombreSala;
-                    if (!string.IsNullOrEmpty(nombreSala))
+                    int id_chat = formSala.IdChatCreado;
+                    if (!string.IsNullOrEmpty(nombreSala) && id_chat > 0)
                     {
-                        treeViewChats.Nodes.Add(nombreSala);
+                        TreeNode nodo = new TreeNode(nombreSala);
+                        nodo.Tag = id_chat; // Guarda el id en el nodo
+                        treeViewChats.Nodes.Add(nodo);
                     }
                 }
             }
         }
+
+        private void treeViewChats_AfterSelect(object sender, TreeViewEventArgs e) //Afterselect del treeview w
+        {
+            if (e.Node.Tag != null)
+            {
+                int idChatSeleccionado = (int)e.Node.Tag;
+                // Ahora puedes usar idChatSeleccionado para consultar la base de datos
+                // y cargar los mensajes de ese chat
+            }
+        }
+
+        //Metodo para cargar los chats del treeview al cargar el formulario bro
+
+
+        public void CargarChatsUsuario(TreeView treeView)
+        {
+            treeView.Nodes.Clear();
+            try
+            {
+                using (var connection = DbConfig.GetOpenConnection())
+                {
+                    string query = "SELECT id_chat, chatname FROM chats WHERE admin = @admin";
+                    using (var cmd = new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@admin", CurrentUser.IdUser);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                int idChat = Convert.ToInt32(reader["id_chat"]);
+                                string nombreChat = reader["chatname"].ToString();
+
+                                TreeNode nodo = new TreeNode(nombreChat);
+                                nodo.Tag = idChat; // Guarda el id en el nodo
+                                treeView.Nodes.Add(nodo);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Error al cargar los chats: " + ex.Message);
+            }
+        }
+
     }
 }

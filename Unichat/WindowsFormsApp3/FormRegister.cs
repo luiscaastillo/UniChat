@@ -215,11 +215,11 @@ namespace UniChat
 
                         int result = cmdInsert.ExecuteNonQuery();
                         
-                        if (result > 0) //sd
+                        if (result > 0) //eso q luis
                         {
                             MessageBox.Show("Usuario registrado exitosamente.");
-                            FormChat chatForm = new FormChat();
-                            chatForm.Show();
+                            Form1 Form2 = new Form1();
+                            Form2.Show();
                             this.Hide();
                         }
                     }
