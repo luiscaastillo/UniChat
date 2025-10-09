@@ -69,14 +69,46 @@ namespace UniChat
             textBoxContra.ForeColor = Color.Gray;
             textBoxContra.Enter += textBoxContra_Enter;
             textBoxContra.Leave += textBoxContra_Leave;
+            textBoxContra.KeyPress += textBoxContra_KeyPress;
 
             textBoxRecontra.Text = "Ingrese nuevamente su contraseña";
             textBoxRecontra.ForeColor = Color.Gray;
             textBoxRecontra.Enter += textBoxRecontra_Enter;
             textBoxRecontra.Leave += textBoxRecontra_Leave;
-
+            textBoxRecontra.KeyPress += textBoxRecontra_KeyPress;
         }
 
+        private void textBoxContra_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (textBoxContra.Text == "Ingrese su contraseña")
+            {
+                textBoxContra.Text = "";
+                textBoxContra.ForeColor = Color.Black;
+            }
+
+            // Si se presiona Enter, ejecuta el registro
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true; // Evita el beep y el salto de línea
+                Bconectar_Click_1(sender, EventArgs.Empty);
+            }
+        }
+        private void textBoxRecontra_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            /*
+            if (textBoxContra.Text == "Ingrese su contraseña")
+            {
+                textBoxContra.Text = "";
+                textBoxContra.ForeColor = Color.Black;
+            }
+            */
+            // Si se presiona Enter, ejecuta el registro
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true; // Evita el beep y el salto de línea
+                Bconectar_Click_1(sender, EventArgs.Empty);
+            }
+        }
         private void textBoxUsuario_Enter(object sender, EventArgs e)
         {
             if (textBoxUsuario.Text == "Ingrese nombre de usuario")

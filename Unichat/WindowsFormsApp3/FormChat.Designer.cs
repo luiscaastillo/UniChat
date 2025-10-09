@@ -31,6 +31,7 @@
             this.pictureUser = new System.Windows.Forms.PictureBox();
             this.labelSalas = new System.Windows.Forms.Label();
             this.panelSalas = new System.Windows.Forms.Panel();
+            this.BDeleteChat = new System.Windows.Forms.PictureBox();
             this.BNewChat = new System.Windows.Forms.PictureBox();
             this.treeViewChats = new System.Windows.Forms.TreeView();
             this.labelChats = new System.Windows.Forms.Label();
@@ -45,6 +46,7 @@
             this.BEnviarMsj = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).BeginInit();
             this.panelSalas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BNewChat)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).BeginInit();
             this.panelSalasName.SuspendLayout();
@@ -77,6 +79,7 @@
             // 
             // panelSalas
             // 
+            this.panelSalas.Controls.Add(this.BDeleteChat);
             this.panelSalas.Controls.Add(this.BNewChat);
             this.panelSalas.Controls.Add(this.treeViewChats);
             this.panelSalas.Controls.Add(this.labelChats);
@@ -87,6 +90,15 @@
             this.panelSalas.Size = new System.Drawing.Size(200, 350);
             this.panelSalas.TabIndex = 6;
             this.panelSalas.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
+            // 
+            // BDeleteChat
+            // 
+            this.BDeleteChat.Location = new System.Drawing.Point(156, 143);
+            this.BDeleteChat.Name = "BDeleteChat";
+            this.BDeleteChat.Size = new System.Drawing.Size(25, 24);
+            this.BDeleteChat.TabIndex = 11;
+            this.BDeleteChat.TabStop = false;
+            this.BDeleteChat.Click += new System.EventHandler(this.BDeleteChat_Click);
             // 
             // BNewChat
             // 
@@ -177,7 +189,7 @@
             // 
             this.labelUsername.AutoSize = true;
             this.labelUsername.Font = new System.Drawing.Font("OCR A Extended", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelUsername.Location = new System.Drawing.Point(64, 20);
+            this.labelUsername.Location = new System.Drawing.Point(64, 17);
             this.labelUsername.Name = "labelUsername";
             this.labelUsername.Size = new System.Drawing.Size(63, 17);
             this.labelUsername.TabIndex = 8;
@@ -215,6 +227,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).EndInit();
             this.panelSalas.ResumeLayout(false);
             this.panelSalas.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BNewChat)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).EndInit();
             this.panelSalasName.ResumeLayout(false);
@@ -246,5 +259,6 @@
         private System.Windows.Forms.PictureBox BLogOut;
         private System.Windows.Forms.TreeView treeViewChats;
         private System.Windows.Forms.PictureBox BNewChat;
+        private System.Windows.Forms.PictureBox BDeleteChat;
     }
 }

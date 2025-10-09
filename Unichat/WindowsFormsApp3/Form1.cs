@@ -69,7 +69,6 @@ namespace Unichat
             BBconectar.FlatAppearance.MouseOverBackColor = Color.Transparent;
             BBconectar.TabStop = true; // Permite el foco con Tab
 
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -99,6 +98,8 @@ namespace Unichat
             path.AddArc(rect.X, rect.Bottom - radio, radio, radio, 90, 90);
             path.CloseAllFigures();
             BBconectar.Region = new Region(path);
+
+
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -179,6 +180,13 @@ namespace Unichat
             {
                 textBoxContra.Text = "";
                 textBoxContra.ForeColor = Color.Black;
+            }
+
+            //Si se da enter
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true; // Evita el beep y el salto de línea
+                BBconectar_Click(sender, EventArgs.Empty);
             }
         }
 

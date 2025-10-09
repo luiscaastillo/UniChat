@@ -53,9 +53,11 @@ namespace UniChat
             BLogOut.SizeMode = PictureBoxSizeMode.StretchImage;
             BNewChat.Image = Image.FromFile("mas.png");
             BNewChat.SizeMode = PictureBoxSizeMode.StretchImage;
+            BDeleteChat.Image = Image.FromFile("menos.png");
+            BDeleteChat.SizeMode = PictureBoxSizeMode.StretchImage;
             treeViewChats.Font = new Font("Century Gothic", 9, FontStyle.Bold);
             treeViewChats.ForeColor = Color.White;
-
+            labelUsername.Font = new Font("Century Gothic", 13, FontStyle.Bold);
             //TextBox de enviar mensaje
             textBoxMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);
 
@@ -91,8 +93,9 @@ namespace UniChat
             textBoxMessage.KeyDown += textBoxMessage_KeyDown;
 
             //Implementación del TreeView
-            CargarChatsUsuario(treeViewChats);            
-          
+            CargarChatsUsuario(treeViewChats);
+            labelUsername.Text = CurrentUser.Username;
+
         }
         private void textBoxMessage_TextChanged(object sender, EventArgs e)
         {
@@ -147,8 +150,6 @@ namespace UniChat
 
         private void BEnviarMsj_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Aqui implementar el envio de mensajes");
-
             //implementar que cuando haga clic sustraiga el contenido de textBoxMessage
             //y genere un label
 
@@ -183,11 +184,14 @@ namespace UniChat
         private void BEmoji_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Aqui implementar lo de los emojis");
+            //Abrir una tipo panel con emojis para seleccionar
+
         }
 
         private void labelUsername_Click(object sender, EventArgs e)
         {
-
+            //Implementar que el usuario que tecleo se cambie por el que este en la base de datos
+            
         }
 
         private void pictureSala_Click(object sender, EventArgs e)
@@ -268,5 +272,53 @@ namespace UniChat
             }
         }
 
+        private void BDeleteChat_Click(object sender, EventArgs e)
+        {
+            //Implementar
+            // -> el elemento que este seleccionado en el treeview
+            // -> eliminar de la base de datos
+            // -> validar que el admin del chat solo pueda eliminar el chat
+
+            if (treeViewChats.SelectedNode != null && treeViewChats.SelectedNode.Tag != null)
+            {
+                int idChatSeleccionado = (int)treeViewChats.SelectedNode.Tag;
+                var confirmResult = MessageBox.Show("¿Estás seguro de que deseas eliminar este chat?", "Confirmar eliminación", MessageBoxButtons.YesNo);
+                
+                if (confirmResult == DialogResult.Yes)
+                {
+                    try
+                    {
+                        using (var connection = DbConfig.GetOpenConnection())
+                        {
+                            string query = "DELETE FROM chats WHERE id_chat = @idChat AND admin = @admin";
+                            using (var cmd = new MySqlCommand(query, connection))
+                            {
+                                cmd.Parameters.AddWithValue("@idChat", idChatSeleccionado);
+                                cmd.Parameters.AddWithValue("@admin", CurrentUser.IdUser);
+                                int rowsAffected = cmd.ExecuteNonQuery();
+                                if (rowsAffected > 0)
+                                {
+                                    treeViewChats.Nodes.Remove(treeViewChats.SelectedNode);
+                                    MessageBox.Show("Chat eliminado correctamente.");
+                                }
+                                else
+                                {
+                                    MessageBox.Show("No tienes permiso para eliminar este chat o el chat no existe.");
+                                }
+                            }
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        MessageBox.Show("Error al eliminar el chat: " + ex.Message);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Por favor, selecciona un chat para eliminar.");
+            }
+
+        }
     }
 }
