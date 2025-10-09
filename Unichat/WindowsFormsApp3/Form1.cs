@@ -13,6 +13,7 @@ using System.Windows.Input;
 using UniChat;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using BCrypt.Net;
+using WindowsFormsApp3;
 
 namespace Unichat
 {
@@ -51,13 +52,26 @@ namespace Unichat
             //Config de los textBox Usuario y Contra
             textBoxUsuario.Font = new Font("Century Gothic", 9, FontStyle.Regular);
             textBoxContra.Font = new Font("Century Gothic", 9, FontStyle.Regular);
+            textBoxContra.PasswordChar = '●'; 
 
-            //Boton Conectar
+            //Imagen  BConectar
             Bconectar.Image = Image.FromFile("iniciar.png");
             Bconectar.SizeMode = PictureBoxSizeMode.StretchImage;
 
+            //Boton BBconectar
+            BBconectar.FlatStyle = FlatStyle.Flat;
+            BBconectar.FlatAppearance.BorderSize = 0;
+            BBconectar.BackColor = Color.Transparent;
+            BBconectar.ForeColor = Color.Transparent;
+            BBconectar.Text = "";
+            BBconectar.TabStop = false;
+            BBconectar.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            BBconectar.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            BBconectar.TabStop = true; // Permite el foco con Tab
+
+
         }
-    
+
         private void Form1_Load(object sender, EventArgs e)
         {
             this.BackColor = Color.FromArgb(83, 73, 76);
@@ -76,6 +90,15 @@ namespace Unichat
 
             textBoxContra.KeyPress += textBoxContra_KeyPress;
 
+            int radio = 20; // Radio de las esquinas
+            System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
+            Rectangle rect = BBconectar.ClientRectangle;
+            path.AddArc(rect.X, rect.Y, radio, radio, 180, 90);
+            path.AddArc(rect.Right - radio, rect.Y, radio, radio, 270, 90);
+            path.AddArc(rect.Right - radio, rect.Bottom - radio, radio, radio, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radio, radio, radio, 90, 90);
+            path.CloseAllFigures();
+            BBconectar.Region = new Region(path);
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -130,21 +153,21 @@ namespace Unichat
                 textBoxUsuario.ForeColor = Color.Gray;
             }
         }
-
         private void textBoxContra_Enter(object sender, EventArgs e)
         {
             if (textBoxContra.Text == "Ingrese su contraseña" || textBoxContra.Text == "Vuelva a ingresar su contraseña")
             {
                 textBoxContra.Text = "";
                 textBoxContra.ForeColor = Color.Black;
+                textBoxContra.PasswordChar = '●'; // Activar ocultamiento
             }
-
         }
 
         private void textBoxContra_Leave(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxContra.Text))
             {
+                textBoxContra.PasswordChar = '\0'; // Mostrar texto normal
                 textBoxContra.Text = "Ingrese su contraseña";
                 textBoxContra.ForeColor = Color.Gray;
             }
@@ -174,38 +197,44 @@ namespace Unichat
                     string username = textBoxUsuario.Text;
                     string password = textBoxContra.Text;
 
-                    string query = "SELECT passwd FROM users WHERE username = @username";
+                    string query = "SELECT id_user, passwd FROM users WHERE username = @username";
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@username", username);
-                        object result = command.ExecuteScalar();
-                        if (result != null)
+                        using (var reader = command.ExecuteReader())
                         {
-                            string storedHashedPassword = result.ToString();
-
-                            if (!storedHashedPassword.StartsWith("$"))
+                            if (reader.Read())
                             {
-                                MessageBox.Show("Su contraseña debe ser actualizada. Contacte al administrador.");
-                                return;
-                            }
+                                int idObtenido = Convert.ToInt32(reader["id_user"]);
+                                string storedHashedPassword = reader["passwd"].ToString();
 
-                            if (PasswordManager.VerifyPassword(password, storedHashedPassword))
-                            {
-                                MessageBox.Show("LogIn Exitoso");
-                                FormChat chatForm = new FormChat();
-                                chatForm.Show();
-                                this.Hide();
+                                if (!storedHashedPassword.StartsWith("$"))
+                                {
+                                    MessageBox.Show("Su contraseña debe ser actualizada. Contacte al administrador.");
+                                    return;
+                                }
+
+                                if (PasswordManager.VerifyPassword(password, storedHashedPassword))
+                                {
+                                    // Guarda el usuario actual (Static Class)
+                                    CurrentUser.SetCurrentUser(idObtenido, username);
+
+                                    MessageBox.Show("LogIn Exitoso");
+                                    FormChat chatForm = new FormChat();
+                                    chatForm.Show();
+                                    this.Hide();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Contraseña incorrecta.");
+                                    textBoxContra.Text = "Vuelva a ingresar su contraseña";
+                                    textBoxContra.ForeColor = Color.Gray;
+                                }
                             }
                             else
                             {
-                                MessageBox.Show("Contraseña incorrecta.");
-                                textBoxContra.Text = "Vuelva a ingresar su contraseña";
-                                textBoxContra.ForeColor = Color.Gray;
+                                MessageBox.Show("El usuario no existe.");
                             }
-                        }
-                        else
-                        {
-                            MessageBox.Show("El usuario no existe.");
                         }
                     }
                 }
@@ -216,8 +245,9 @@ namespace Unichat
             }
         }
 
-
-
-
+        private void BBconectar_Click(object sender, EventArgs e)
+        {
+            Bconectar_Click_1(sender,e);
+        }
     }
 }
