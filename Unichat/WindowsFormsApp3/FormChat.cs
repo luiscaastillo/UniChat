@@ -37,6 +37,7 @@ namespace UniChat
             panelUser.BackColor = Color.FromArgb(166, 166, 166);
             panelSalas.BackColor = Color.FromArgb(166, 166, 166);
             panelName.BackColor = Color.FromArgb(25, 28, 31);
+            panelEmoji.BackColor = Color.FromArgb(25, 28, 31);
             panelSalasName.BackColor = Color.FromArgb(25, 28, 31);
             treeViewChats.BackColor = Color.FromArgb(25, 28, 31);
 
@@ -53,11 +54,13 @@ namespace UniChat
             BLogOut.SizeMode = PictureBoxSizeMode.StretchImage;
             BNewChat.Image = Image.FromFile("mas.png");
             BNewChat.SizeMode = PictureBoxSizeMode.StretchImage;
+            BDeleteChat.Image = Image.FromFile("menos.png");
+            BDeleteChat.SizeMode = PictureBoxSizeMode.StretchImage;
             treeViewChats.Font = new Font("Century Gothic", 9, FontStyle.Bold);
             treeViewChats.ForeColor = Color.White;
-
+            labelUsername.Font = new Font("Century Gothic", 13, FontStyle.Bold);
             //TextBox de enviar mensaje
-            textBoxMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);
+            RichMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);    
 
             //Aplicar cuando se cierre el FormChat, se cierre toda la aplicación
             this.FormClosed += (s, e) => Application.Exit();
@@ -82,24 +85,32 @@ namespace UniChat
         private void FormChat_Load(object sender, EventArgs e)
         {
             //Cambiar el texto y color de los TextBox al iniciar
-            textBoxMessage.Text = "Escribe un mensaje";
-            textBoxMessage.ForeColor = Color.Gray;
+            RichMessage.Text = "Escribe un mensaje";
+            RichMessage.ForeColor = Color.Gray;
 
             //Cargar las funciones de textBoxMessage
+            /*
             textBoxMessage.Enter += textBoxMessage_Enter;
             textBoxMessage.Leave += textBoxMessage_Leave;
             textBoxMessage.KeyDown += textBoxMessage_KeyDown;
+            */
 
+            RichMessage.Enter += RichMessage_Enter;
+            RichMessage.Leave += RichMessage_Leave;
+            RichMessage.KeyDown += RichMessage_KeyDown;
             //Implementación del TreeView
-            CargarChatsUsuario(treeViewChats);            
-          
+            CargarChatsUsuario(treeViewChats);
+            labelUsername.Text = CurrentUser.Username;
+
+            //Ocultar el panel de emojis al iniciar
+            panelEmoji.Visible = false;
         }
         private void textBoxMessage_TextChanged(object sender, EventArgs e)
         {
 
         }
         //Con esta función se puede dar la tecla Enter y se hace el envió de los mensajes
-        private void textBoxMessage_KeyDown(object sender, KeyEventArgs e)
+        private void RichMessage_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
@@ -107,21 +118,21 @@ namespace UniChat
                 e.SuppressKeyPress = true; // Evita que se agregue un salto de línea en el TextBox
             }
         }
-        private void textBoxMessage_Enter(object sender, EventArgs e)
+        private void RichMessage_Enter(object sender, EventArgs e)
         {
-            if (textBoxMessage.Text == "Escribe un mensaje")
+            if (RichMessage.Text == "Escribe un mensaje")
             {
-                textBoxMessage.Text = "";
-                textBoxMessage.ForeColor = Color.Black;
+                RichMessage.Text = "";
+                RichMessage.ForeColor = Color.Black;
             }
         }
 
-        private void textBoxMessage_Leave(object sender, EventArgs e)
+        private void RichMessage_Leave(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(textBoxMessage.Text))
+            if (string.IsNullOrWhiteSpace(RichMessage.Text))
             {
-                textBoxMessage.Text = "Escribe un mensaje";
-                textBoxMessage.ForeColor = Color.Gray;
+                RichMessage.Text = "Escribe un mensaje";
+                RichMessage.ForeColor = Color.Gray;
             }
         }
 
@@ -145,15 +156,16 @@ namespace UniChat
 
         }
 
+        /*
         private void BEnviarMsj_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Aqui implementar el envio de mensajes");
-
             //implementar que cuando haga clic sustraiga el contenido de textBoxMessage
             //y genere un label
 
             //Aqui se generan los chats
-            string mensaje = textBoxMessage.Text.Trim();
+            string mensaje = RichMessage.Text.Trim();
+            //Mostrar el emoji si se agrega
+
             if (!string.IsNullOrEmpty(mensaje) && mensaje != "Escribe un mensaje")
             {
                 Label nuevoLabel = new Label();
@@ -176,18 +188,64 @@ namespace UniChat
             }
 
             // Limpia el textbox para el siguiente mensaje
-            textBoxMessage.Text = "";
-            textBoxMessage.ForeColor = Color.Gray;
+            RichMessage.Text = "";
+            RichMessage.ForeColor = Color.Gray;
+        }
+        */
+
+        private void BEnviarMsj_Click(object sender, EventArgs e)
+        {
+            string mensaje = RichMessage.Text.Trim();
+            if (!string.IsNullOrEmpty(mensaje) && mensaje != "Escribe un mensaje")
+            {
+                int padding = 15; // margen lateral
+              
+                RichTextBox mensajeBox = new RichTextBox();
+                mensajeBox.Rtf = RichMessage.Rtf;
+                mensajeBox.ReadOnly = true;
+                mensajeBox.BorderStyle = BorderStyle.None;
+                mensajeBox.BackColor = Color.FromArgb(25, 28, 31);
+                mensajeBox.ForeColor = Color.White;
+                mensajeBox.Font = new Font("Century Gothic", 9, FontStyle.Regular);
+                mensajeBox.Height = 20;
+                mensajeBox.ScrollBars = RichTextBoxScrollBars.None;
+
+                // Agrega el mensaje al panel
+                panelUser.Controls.Add(mensajeBox);
+
+                // Posiciona manualmente cada RichTextBox (de abajo hacia arriba)
+                
+                int y = panelUser.Height - padding;
+                foreach (Control ctrl in panelUser.Controls.OfType<RichTextBox>().Where(c => c != RichMessage).Reverse())
+                {
+                    int x = panelUser.Width - ctrl.Width - padding;
+                    ctrl.Location = new Point(x,y - 60);
+                    y -= ctrl.Height + padding;
+                }
+                
+            }
+            RichMessage.Clear();
+            RichMessage.ForeColor = Color.Gray;
+            RichMessage.Text = "";
         }
 
         private void BEmoji_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Aqui implementar lo de los emojis");
+            //Abrir una tipo panel con emojis para seleccionar
+            //\U0001F60A es una carita feliz
+            //Mostrar el panel de emoji cuando se seleccione el botón de emoji
+
+            panelEmoji.Visible = true; // Alterna la visibilidad del panel de emojis
+
+            happy.Image = Image.FromFile("happy.png");
+            happy.SizeMode = PictureBoxSizeMode.StretchImage;
+            //textBoxMessage.Text += "\U0001F60A"; // Agrega un emoji de ejemplo
         }
 
         private void labelUsername_Click(object sender, EventArgs e)
         {
-
+            //Implementar que el usuario que tecleo se cambie por el que este en la base de datos
+            
         }
 
         private void pictureSala_Click(object sender, EventArgs e)
@@ -268,5 +326,112 @@ namespace UniChat
             }
         }
 
+        private void BDeleteChat_Click(object sender, EventArgs e)
+        {
+            //Implementar
+            // -> el elemento que este seleccionado en el treeview
+            // -> eliminar de la base de datos
+            // -> validar que el admin del chat solo pueda eliminar el chat
+
+            if (treeViewChats.SelectedNode != null && treeViewChats.SelectedNode.Tag != null)
+            {
+                int idChatSeleccionado = (int)treeViewChats.SelectedNode.Tag;
+                var confirmResult = MessageBox.Show("¿Estás seguro de que deseas eliminar este chat?", "Confirmar eliminación", MessageBoxButtons.YesNo);
+                
+                if (confirmResult == DialogResult.Yes)
+                {
+                    try
+                    {
+                        using (var connection = DbConfig.GetOpenConnection())
+                        {
+                            string query = "DELETE FROM chats WHERE id_chat = @idChat AND admin = @admin";
+                            using (var cmd = new MySqlCommand(query, connection))
+                            {
+                                cmd.Parameters.AddWithValue("@idChat", idChatSeleccionado);
+                                cmd.Parameters.AddWithValue("@admin", CurrentUser.IdUser);
+                                int rowsAffected = cmd.ExecuteNonQuery();
+                                if (rowsAffected > 0)
+                                {
+                                    treeViewChats.Nodes.Remove(treeViewChats.SelectedNode);
+                                    MessageBox.Show("Chat eliminado correctamente.");
+                                }
+                                else
+                                {
+                                    MessageBox.Show("No tienes permiso para eliminar este chat o el chat no existe.");
+                                }
+                            }
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        MessageBox.Show("Error al eliminar el chat: " + ex.Message);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Por favor, selecciona un chat para eliminar.");
+            }
+
+        }
+
+        private void panelEmoji_Paint(object sender, PaintEventArgs e)
+        {
+            //si se toca cada emoji agregarlo al richtextbox mostrar la imagen
+            happy.Click -= Happy_Click;
+            happy.Click += Happy_Click;
+        }
+
+        private void RichMessage_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Happy_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string imagePath = "happy.png"; // ruta relativa
+                if (!System.IO.File.Exists(imagePath))
+                {
+                    MessageBox.Show("No se encontró el archivo del emoji: " + imagePath);
+                    return;
+                }
+
+                Image emoji = Image.FromFile(imagePath);
+                InsertImageIntoRichTextBox(RichMessage, emoji);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al insertar emoji: " + ex.Message);
+            }
+
+            panelEmoji.Visible = false; // Oculta el panel después de seleccionar un emoji
+        }
+
+        private void InsertImageIntoRichTextBox(RichTextBox rtb, Image image)
+        {
+            this.BackColor = Color.White;
+            if (image == null || rtb == null) return;
+
+            // 🔹 Ajusta estos valores a gusto
+            int customWidth = 15;  // ancho deseado (puedes probar 25, 30, 50…)
+            int customHeight = 15; // alto deseado (igual al ancho para mantenerlo cuadrado)
+
+            Image resized = new Bitmap(image, new Size(customWidth, customHeight));
+
+            Clipboard.SetImage(resized);
+            rtb.Paste();
+
+            resized.Dispose();
+        }
+
+
+
+
+        private void happy_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

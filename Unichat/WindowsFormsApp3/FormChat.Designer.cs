@@ -31,20 +31,29 @@
             this.pictureUser = new System.Windows.Forms.PictureBox();
             this.labelSalas = new System.Windows.Forms.Label();
             this.panelSalas = new System.Windows.Forms.Panel();
+            this.BDeleteChat = new System.Windows.Forms.PictureBox();
             this.BNewChat = new System.Windows.Forms.PictureBox();
             this.treeViewChats = new System.Windows.Forms.TreeView();
             this.labelChats = new System.Windows.Forms.Label();
             this.pictureSala = new System.Windows.Forms.PictureBox();
             this.panelSalasName = new System.Windows.Forms.Panel();
-            this.textBoxMessage = new System.Windows.Forms.TextBox();
             this.panelUser = new System.Windows.Forms.Panel();
             this.panelName = new System.Windows.Forms.Panel();
             this.BLogOut = new System.Windows.Forms.PictureBox();
             this.labelUsername = new System.Windows.Forms.Label();
             this.BEmoji = new System.Windows.Forms.PictureBox();
             this.BEnviarMsj = new System.Windows.Forms.PictureBox();
+            this.RichMessage = new System.Windows.Forms.RichTextBox();
+            this.panelEmoji = new System.Windows.Forms.Panel();
+            this.happy = new System.Windows.Forms.PictureBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.pictureBox4 = new System.Windows.Forms.PictureBox();
+            this.pictureBox5 = new System.Windows.Forms.PictureBox();
+            this.pictureBox6 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).BeginInit();
             this.panelSalas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BNewChat)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).BeginInit();
             this.panelSalasName.SuspendLayout();
@@ -53,6 +62,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.BLogOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEmoji)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEnviarMsj)).BeginInit();
+            this.panelEmoji.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.happy)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureUser
@@ -77,6 +93,7 @@
             // 
             // panelSalas
             // 
+            this.panelSalas.Controls.Add(this.BDeleteChat);
             this.panelSalas.Controls.Add(this.BNewChat);
             this.panelSalas.Controls.Add(this.treeViewChats);
             this.panelSalas.Controls.Add(this.labelChats);
@@ -87,6 +104,15 @@
             this.panelSalas.Size = new System.Drawing.Size(200, 350);
             this.panelSalas.TabIndex = 6;
             this.panelSalas.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
+            // 
+            // BDeleteChat
+            // 
+            this.BDeleteChat.Location = new System.Drawing.Point(156, 143);
+            this.BDeleteChat.Name = "BDeleteChat";
+            this.BDeleteChat.Size = new System.Drawing.Size(25, 24);
+            this.BDeleteChat.TabIndex = 11;
+            this.BDeleteChat.TabStop = false;
+            this.BDeleteChat.Click += new System.EventHandler(this.BDeleteChat_Click);
             // 
             // BNewChat
             // 
@@ -132,22 +158,13 @@
             this.panelSalasName.Size = new System.Drawing.Size(200, 55);
             this.panelSalasName.TabIndex = 5;
             // 
-            // textBoxMessage
-            // 
-            this.textBoxMessage.Font = new System.Drawing.Font("Century Gothic", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxMessage.Location = new System.Drawing.Point(22, 296);
-            this.textBoxMessage.Name = "textBoxMessage";
-            this.textBoxMessage.Size = new System.Drawing.Size(420, 21);
-            this.textBoxMessage.TabIndex = 7;
-            this.textBoxMessage.Text = "Escribe un mensaje";
-            this.textBoxMessage.TextChanged += new System.EventHandler(this.textBoxMessage_TextChanged);
-            // 
             // panelUser
             // 
+            this.panelUser.Controls.Add(this.panelEmoji);
+            this.panelUser.Controls.Add(this.RichMessage);
             this.panelUser.Controls.Add(this.panelName);
             this.panelUser.Controls.Add(this.BEmoji);
             this.panelUser.Controls.Add(this.BEnviarMsj);
-            this.panelUser.Controls.Add(this.textBoxMessage);
             this.panelUser.Location = new System.Drawing.Point(218, 13);
             this.panelUser.Name = "panelUser";
             this.panelUser.Size = new System.Drawing.Size(458, 350);
@@ -177,7 +194,7 @@
             // 
             this.labelUsername.AutoSize = true;
             this.labelUsername.Font = new System.Drawing.Font("OCR A Extended", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelUsername.Location = new System.Drawing.Point(64, 20);
+            this.labelUsername.Location = new System.Drawing.Point(64, 17);
             this.labelUsername.Name = "labelUsername";
             this.labelUsername.Size = new System.Drawing.Size(63, 17);
             this.labelUsername.TabIndex = 8;
@@ -202,6 +219,78 @@
             this.BEnviarMsj.TabStop = false;
             this.BEnviarMsj.Click += new System.EventHandler(this.BEnviarMsj_Click);
             // 
+            // RichMessage
+            // 
+            this.RichMessage.Location = new System.Drawing.Point(22, 297);
+            this.RichMessage.Name = "RichMessage";
+            this.RichMessage.Size = new System.Drawing.Size(420, 20);
+            this.RichMessage.TabIndex = 12;
+            this.RichMessage.Text = "";
+            this.RichMessage.TextChanged += new System.EventHandler(this.RichMessage_TextChanged);
+            // 
+            // panelEmoji
+            // 
+            this.panelEmoji.Controls.Add(this.pictureBox6);
+            this.panelEmoji.Controls.Add(this.pictureBox5);
+            this.panelEmoji.Controls.Add(this.pictureBox4);
+            this.panelEmoji.Controls.Add(this.pictureBox3);
+            this.panelEmoji.Controls.Add(this.pictureBox2);
+            this.panelEmoji.Controls.Add(this.happy);
+            this.panelEmoji.Location = new System.Drawing.Point(262, 164);
+            this.panelEmoji.Name = "panelEmoji";
+            this.panelEmoji.Size = new System.Drawing.Size(180, 100);
+            this.panelEmoji.TabIndex = 13;
+            this.panelEmoji.Paint += new System.Windows.Forms.PaintEventHandler(this.panelEmoji_Paint);
+            // 
+            // happy
+            // 
+            this.happy.Location = new System.Drawing.Point(3, 13);
+            this.happy.Name = "happy";
+            this.happy.Size = new System.Drawing.Size(22, 23);
+            this.happy.TabIndex = 0;
+            this.happy.TabStop = false;
+            this.happy.Click += new System.EventHandler(this.happy_Click);
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Location = new System.Drawing.Point(3, 42);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(22, 23);
+            this.pictureBox2.TabIndex = 1;
+            this.pictureBox2.TabStop = false;
+            // 
+            // pictureBox3
+            // 
+            this.pictureBox3.Location = new System.Drawing.Point(3, 71);
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.Size = new System.Drawing.Size(22, 23);
+            this.pictureBox3.TabIndex = 2;
+            this.pictureBox3.TabStop = false;
+            // 
+            // pictureBox4
+            // 
+            this.pictureBox4.Location = new System.Drawing.Point(31, 13);
+            this.pictureBox4.Name = "pictureBox4";
+            this.pictureBox4.Size = new System.Drawing.Size(22, 23);
+            this.pictureBox4.TabIndex = 3;
+            this.pictureBox4.TabStop = false;
+            // 
+            // pictureBox5
+            // 
+            this.pictureBox5.Location = new System.Drawing.Point(31, 42);
+            this.pictureBox5.Name = "pictureBox5";
+            this.pictureBox5.Size = new System.Drawing.Size(22, 23);
+            this.pictureBox5.TabIndex = 4;
+            this.pictureBox5.TabStop = false;
+            // 
+            // pictureBox6
+            // 
+            this.pictureBox6.Location = new System.Drawing.Point(31, 71);
+            this.pictureBox6.Name = "pictureBox6";
+            this.pictureBox6.Size = new System.Drawing.Size(22, 23);
+            this.pictureBox6.TabIndex = 5;
+            this.pictureBox6.TabStop = false;
+            // 
             // FormChat
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -215,17 +304,24 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).EndInit();
             this.panelSalas.ResumeLayout(false);
             this.panelSalas.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BNewChat)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).EndInit();
             this.panelSalasName.ResumeLayout(false);
             this.panelSalasName.PerformLayout();
             this.panelUser.ResumeLayout(false);
-            this.panelUser.PerformLayout();
             this.panelName.ResumeLayout(false);
             this.panelName.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BLogOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEmoji)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEnviarMsj)).EndInit();
+            this.panelEmoji.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.happy)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -234,7 +330,6 @@
         private System.Windows.Forms.PictureBox pictureUser;
         private System.Windows.Forms.Label labelSalas;
         private System.Windows.Forms.Panel panelSalas;
-        private System.Windows.Forms.TextBox textBoxMessage;
         private System.Windows.Forms.Panel panelUser;
         private System.Windows.Forms.Label labelUsername;
         private System.Windows.Forms.PictureBox BEnviarMsj;
@@ -246,5 +341,14 @@
         private System.Windows.Forms.PictureBox BLogOut;
         private System.Windows.Forms.TreeView treeViewChats;
         private System.Windows.Forms.PictureBox BNewChat;
+        private System.Windows.Forms.PictureBox BDeleteChat;
+        private System.Windows.Forms.RichTextBox RichMessage;
+        private System.Windows.Forms.Panel panelEmoji;
+        private System.Windows.Forms.PictureBox pictureBox6;
+        private System.Windows.Forms.PictureBox pictureBox5;
+        private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.PictureBox pictureBox3;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.PictureBox happy;
     }
 }
