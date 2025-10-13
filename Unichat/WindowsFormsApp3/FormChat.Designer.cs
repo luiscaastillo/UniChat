@@ -38,19 +38,26 @@
             this.pictureSala = new System.Windows.Forms.PictureBox();
             this.panelSalasName = new System.Windows.Forms.Panel();
             this.panelUser = new System.Windows.Forms.Panel();
+            this.panelEmoji = new System.Windows.Forms.Panel();
+            this.happy = new System.Windows.Forms.PictureBox();
+            this.RichMessage = new System.Windows.Forms.RichTextBox();
             this.panelName = new System.Windows.Forms.Panel();
             this.BLogOut = new System.Windows.Forms.PictureBox();
             this.labelUsername = new System.Windows.Forms.Label();
             this.BEmoji = new System.Windows.Forms.PictureBox();
             this.BEnviarMsj = new System.Windows.Forms.PictureBox();
-            this.RichMessage = new System.Windows.Forms.RichTextBox();
-            this.panelEmoji = new System.Windows.Forms.Panel();
-            this.happy = new System.Windows.Forms.PictureBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
-            this.pictureBox3 = new System.Windows.Forms.PictureBox();
-            this.pictureBox4 = new System.Windows.Forms.PictureBox();
-            this.pictureBox5 = new System.Windows.Forms.PictureBox();
-            this.pictureBox6 = new System.Windows.Forms.PictureBox();
+            this.close = new System.Windows.Forms.PictureBox();
+            this.sad = new System.Windows.Forms.PictureBox();
+            this.cry = new System.Windows.Forms.PictureBox();
+            this.eww = new System.Windows.Forms.PictureBox();
+            this.like = new System.Windows.Forms.PictureBox();
+            this.angry = new System.Windows.Forms.PictureBox();
+            this.corazon = new System.Windows.Forms.PictureBox();
+            this.lover = new System.Windows.Forms.PictureBox();
+            this.kiss = new System.Windows.Forms.PictureBox();
+            this.pray = new System.Windows.Forms.PictureBox();
+            this.ajajaja = new System.Windows.Forms.PictureBox();
+            this.cool = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).BeginInit();
             this.panelSalas.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).BeginInit();
@@ -58,17 +65,24 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).BeginInit();
             this.panelSalasName.SuspendLayout();
             this.panelUser.SuspendLayout();
+            this.panelEmoji.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.happy)).BeginInit();
             this.panelName.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BLogOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEmoji)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEnviarMsj)).BeginInit();
-            this.panelEmoji.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.happy)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.close)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sad)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cry)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.eww)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.like)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.angry)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.corazon)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lover)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.kiss)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pray)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ajajaja)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cool)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureUser
@@ -171,6 +185,45 @@
             this.panelUser.TabIndex = 8;
             this.panelUser.Paint += new System.Windows.Forms.PaintEventHandler(this.panelUser_Paint);
             // 
+            // panelEmoji
+            // 
+            this.panelEmoji.Controls.Add(this.cool);
+            this.panelEmoji.Controls.Add(this.ajajaja);
+            this.panelEmoji.Controls.Add(this.pray);
+            this.panelEmoji.Controls.Add(this.kiss);
+            this.panelEmoji.Controls.Add(this.lover);
+            this.panelEmoji.Controls.Add(this.corazon);
+            this.panelEmoji.Controls.Add(this.angry);
+            this.panelEmoji.Controls.Add(this.like);
+            this.panelEmoji.Controls.Add(this.eww);
+            this.panelEmoji.Controls.Add(this.cry);
+            this.panelEmoji.Controls.Add(this.sad);
+            this.panelEmoji.Controls.Add(this.close);
+            this.panelEmoji.Controls.Add(this.happy);
+            this.panelEmoji.Location = new System.Drawing.Point(292, 154);
+            this.panelEmoji.Name = "panelEmoji";
+            this.panelEmoji.Size = new System.Drawing.Size(163, 137);
+            this.panelEmoji.TabIndex = 13;
+            this.panelEmoji.Paint += new System.Windows.Forms.PaintEventHandler(this.panelEmoji_Paint);
+            // 
+            // happy
+            // 
+            this.happy.Location = new System.Drawing.Point(9, 22);
+            this.happy.Name = "happy";
+            this.happy.Size = new System.Drawing.Size(30, 30);
+            this.happy.TabIndex = 0;
+            this.happy.TabStop = false;
+            this.happy.Click += new System.EventHandler(this.happy_Click);
+            // 
+            // RichMessage
+            // 
+            this.RichMessage.Location = new System.Drawing.Point(22, 297);
+            this.RichMessage.Name = "RichMessage";
+            this.RichMessage.Size = new System.Drawing.Size(420, 20);
+            this.RichMessage.TabIndex = 12;
+            this.RichMessage.Text = "";
+            this.RichMessage.TextChanged += new System.EventHandler(this.RichMessage_TextChanged);
+            // 
             // panelName
             // 
             this.panelName.Controls.Add(this.BLogOut);
@@ -219,77 +272,112 @@
             this.BEnviarMsj.TabStop = false;
             this.BEnviarMsj.Click += new System.EventHandler(this.BEnviarMsj_Click);
             // 
-            // RichMessage
+            // close
             // 
-            this.RichMessage.Location = new System.Drawing.Point(22, 297);
-            this.RichMessage.Name = "RichMessage";
-            this.RichMessage.Size = new System.Drawing.Size(420, 20);
-            this.RichMessage.TabIndex = 12;
-            this.RichMessage.Text = "";
-            this.RichMessage.TextChanged += new System.EventHandler(this.RichMessage_TextChanged);
+            this.close.Location = new System.Drawing.Point(147, 3);
+            this.close.Name = "close";
+            this.close.Size = new System.Drawing.Size(13, 13);
+            this.close.TabIndex = 6;
+            this.close.TabStop = false;
+            this.close.Click += new System.EventHandler(this.close_Click);
             // 
-            // panelEmoji
+            // sad
             // 
-            this.panelEmoji.Controls.Add(this.pictureBox6);
-            this.panelEmoji.Controls.Add(this.pictureBox5);
-            this.panelEmoji.Controls.Add(this.pictureBox4);
-            this.panelEmoji.Controls.Add(this.pictureBox3);
-            this.panelEmoji.Controls.Add(this.pictureBox2);
-            this.panelEmoji.Controls.Add(this.happy);
-            this.panelEmoji.Location = new System.Drawing.Point(262, 164);
-            this.panelEmoji.Name = "panelEmoji";
-            this.panelEmoji.Size = new System.Drawing.Size(180, 100);
-            this.panelEmoji.TabIndex = 13;
-            this.panelEmoji.Paint += new System.Windows.Forms.PaintEventHandler(this.panelEmoji_Paint);
+            this.sad.Location = new System.Drawing.Point(9, 59);
+            this.sad.Name = "sad";
+            this.sad.Size = new System.Drawing.Size(30, 30);
+            this.sad.TabIndex = 7;
+            this.sad.TabStop = false;
+            this.sad.Click += new System.EventHandler(this.sad_Click);
             // 
-            // happy
+            // cry
             // 
-            this.happy.Location = new System.Drawing.Point(3, 13);
-            this.happy.Name = "happy";
-            this.happy.Size = new System.Drawing.Size(22, 23);
-            this.happy.TabIndex = 0;
-            this.happy.TabStop = false;
-            this.happy.Click += new System.EventHandler(this.happy_Click);
+            this.cry.Location = new System.Drawing.Point(45, 22);
+            this.cry.Name = "cry";
+            this.cry.Size = new System.Drawing.Size(30, 30);
+            this.cry.TabIndex = 8;
+            this.cry.TabStop = false;
+            this.cry.Click += new System.EventHandler(this.cry_Click);
             // 
-            // pictureBox2
+            // eww
             // 
-            this.pictureBox2.Location = new System.Drawing.Point(3, 42);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(22, 23);
-            this.pictureBox2.TabIndex = 1;
-            this.pictureBox2.TabStop = false;
+            this.eww.Location = new System.Drawing.Point(45, 59);
+            this.eww.Name = "eww";
+            this.eww.Size = new System.Drawing.Size(30, 30);
+            this.eww.TabIndex = 9;
+            this.eww.TabStop = false;
+            this.eww.Click += new System.EventHandler(this.eww_Click);
             // 
-            // pictureBox3
+            // like
             // 
-            this.pictureBox3.Location = new System.Drawing.Point(3, 71);
-            this.pictureBox3.Name = "pictureBox3";
-            this.pictureBox3.Size = new System.Drawing.Size(22, 23);
-            this.pictureBox3.TabIndex = 2;
-            this.pictureBox3.TabStop = false;
+            this.like.Location = new System.Drawing.Point(45, 95);
+            this.like.Name = "like";
+            this.like.Size = new System.Drawing.Size(30, 30);
+            this.like.TabIndex = 10;
+            this.like.TabStop = false;
+            this.like.Click += new System.EventHandler(this.like_Click);
             // 
-            // pictureBox4
+            // angry
             // 
-            this.pictureBox4.Location = new System.Drawing.Point(31, 13);
-            this.pictureBox4.Name = "pictureBox4";
-            this.pictureBox4.Size = new System.Drawing.Size(22, 23);
-            this.pictureBox4.TabIndex = 3;
-            this.pictureBox4.TabStop = false;
+            this.angry.Location = new System.Drawing.Point(9, 95);
+            this.angry.Name = "angry";
+            this.angry.Size = new System.Drawing.Size(30, 30);
+            this.angry.TabIndex = 11;
+            this.angry.TabStop = false;
             // 
-            // pictureBox5
+            // corazon
             // 
-            this.pictureBox5.Location = new System.Drawing.Point(31, 42);
-            this.pictureBox5.Name = "pictureBox5";
-            this.pictureBox5.Size = new System.Drawing.Size(22, 23);
-            this.pictureBox5.TabIndex = 4;
-            this.pictureBox5.TabStop = false;
+            this.corazon.Location = new System.Drawing.Point(81, 22);
+            this.corazon.Name = "corazon";
+            this.corazon.Size = new System.Drawing.Size(30, 30);
+            this.corazon.TabIndex = 12;
+            this.corazon.TabStop = false;
+            this.corazon.Click += new System.EventHandler(this.corazon_Click);
             // 
-            // pictureBox6
+            // lover
             // 
-            this.pictureBox6.Location = new System.Drawing.Point(31, 71);
-            this.pictureBox6.Name = "pictureBox6";
-            this.pictureBox6.Size = new System.Drawing.Size(22, 23);
-            this.pictureBox6.TabIndex = 5;
-            this.pictureBox6.TabStop = false;
+            this.lover.Location = new System.Drawing.Point(81, 59);
+            this.lover.Name = "lover";
+            this.lover.Size = new System.Drawing.Size(30, 30);
+            this.lover.TabIndex = 13;
+            this.lover.TabStop = false;
+            this.lover.Click += new System.EventHandler(this.lover_Click);
+            // 
+            // kiss
+            // 
+            this.kiss.Location = new System.Drawing.Point(81, 95);
+            this.kiss.Name = "kiss";
+            this.kiss.Size = new System.Drawing.Size(30, 30);
+            this.kiss.TabIndex = 14;
+            this.kiss.TabStop = false;
+            this.kiss.Click += new System.EventHandler(this.kiss_Click);
+            // 
+            // pray
+            // 
+            this.pray.Location = new System.Drawing.Point(117, 22);
+            this.pray.Name = "pray";
+            this.pray.Size = new System.Drawing.Size(30, 30);
+            this.pray.TabIndex = 15;
+            this.pray.TabStop = false;
+            this.pray.Click += new System.EventHandler(this.pray_Click);
+            // 
+            // ajajaja
+            // 
+            this.ajajaja.Location = new System.Drawing.Point(117, 59);
+            this.ajajaja.Name = "ajajaja";
+            this.ajajaja.Size = new System.Drawing.Size(30, 30);
+            this.ajajaja.TabIndex = 16;
+            this.ajajaja.TabStop = false;
+            this.ajajaja.Click += new System.EventHandler(this.ajajaja_Click);
+            // 
+            // cool
+            // 
+            this.cool.Location = new System.Drawing.Point(117, 95);
+            this.cool.Name = "cool";
+            this.cool.Size = new System.Drawing.Size(30, 30);
+            this.cool.TabIndex = 17;
+            this.cool.TabStop = false;
+            this.cool.Click += new System.EventHandler(this.cool_Click);
             // 
             // FormChat
             // 
@@ -310,18 +398,25 @@
             this.panelSalasName.ResumeLayout(false);
             this.panelSalasName.PerformLayout();
             this.panelUser.ResumeLayout(false);
+            this.panelEmoji.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.happy)).EndInit();
             this.panelName.ResumeLayout(false);
             this.panelName.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BLogOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEmoji)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEnviarMsj)).EndInit();
-            this.panelEmoji.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.happy)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.close)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sad)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cry)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.eww)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.like)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.angry)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.corazon)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lover)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.kiss)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pray)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ajajaja)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cool)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -344,11 +439,18 @@
         private System.Windows.Forms.PictureBox BDeleteChat;
         private System.Windows.Forms.RichTextBox RichMessage;
         private System.Windows.Forms.Panel panelEmoji;
-        private System.Windows.Forms.PictureBox pictureBox6;
-        private System.Windows.Forms.PictureBox pictureBox5;
-        private System.Windows.Forms.PictureBox pictureBox4;
-        private System.Windows.Forms.PictureBox pictureBox3;
-        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.PictureBox happy;
+        private System.Windows.Forms.PictureBox like;
+        private System.Windows.Forms.PictureBox eww;
+        private System.Windows.Forms.PictureBox cry;
+        private System.Windows.Forms.PictureBox sad;
+        private System.Windows.Forms.PictureBox close;
+        private System.Windows.Forms.PictureBox angry;
+        private System.Windows.Forms.PictureBox kiss;
+        private System.Windows.Forms.PictureBox lover;
+        private System.Windows.Forms.PictureBox corazon;
+        private System.Windows.Forms.PictureBox cool;
+        private System.Windows.Forms.PictureBox ajajaja;
+        private System.Windows.Forms.PictureBox pray;
     }
 }
