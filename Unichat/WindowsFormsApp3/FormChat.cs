@@ -52,17 +52,21 @@ namespace UniChat
 
             //Colores de los paneles
             panelUser.BackColor = Color.FromArgb(166, 166, 166);
+            panelUser2.BackColor = Color.FromArgb(166, 166, 166);
             panelSalas.BackColor = Color.FromArgb(166, 166, 166);
             panelName.BackColor = Color.FromArgb(25, 28, 31);
             panelEmoji.BackColor = Color.FromArgb(25, 28, 31);
             panelSalasName.BackColor = Color.FromArgb(25, 28, 31);
             treeViewChats.BackColor = Color.FromArgb(25, 28, 31);
+            treeViewUsers.BackColor = Color.FromArgb(25, 28, 31);
 
             //Botones e iconos 
             pictureUser.Image = Image.FromFile("user.png");
             pictureUser.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureSala.Image = Image.FromFile("group.png");
             pictureSala.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureSala1.Image = Image.FromFile("group.png");
+            pictureSala1.SizeMode = PictureBoxSizeMode.StretchImage;
             BEnviarMsj.Image = Image.FromFile("send.png");
             BEnviarMsj.SizeMode = PictureBoxSizeMode.StretchImage;
             BEmoji.Image = Image.FromFile("emoji.png");
@@ -71,10 +75,14 @@ namespace UniChat
             BLogOut.SizeMode = PictureBoxSizeMode.StretchImage;
             BNewChat.Image = Image.FromFile("mas.png");
             BNewChat.SizeMode = PictureBoxSizeMode.StretchImage;
+            addUser.Image = Image.FromFile("mas.png");
+            addUser.SizeMode = PictureBoxSizeMode.StretchImage;
             BDeleteChat.Image = Image.FromFile("menos.png");
             BDeleteChat.SizeMode = PictureBoxSizeMode.StretchImage;
             treeViewChats.Font = new Font("Century Gothic", 9, FontStyle.Bold);
             treeViewChats.ForeColor = Color.White;
+            treeViewUsers.ForeColor = Color.White;
+            treeViewUsers.Font = new Font("Century Gothic", 9, FontStyle.Bold);
             labelUsername.Font = new Font("Century Gothic", 13, FontStyle.Bold);
             //TextBox de enviar mensaje
             RichMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);
@@ -162,7 +170,7 @@ namespace UniChat
 
         private void panelUser_Paint(object sender, PaintEventArgs e)
         {
-
+                
         }
 
         private void pictureUser_Click(object sender, EventArgs e)
@@ -213,32 +221,37 @@ namespace UniChat
 
             if (!string.IsNullOrEmpty(mensaje) && mensaje != "Escribe un mensaje")
             {
-                // Process emojis first
+                // Procesar emojis
                 foreach (var entry in EmojiMap)
                 {
                     RichMessage.Text = RichMessage.Text.Replace(entry.Key, entry.Value);
                 }
-                
-                // Process @mentions - create a highlighted version of the message
-                string processedMessage = RichMessage.Text;
+
+                // Crear el RichTextBox del mensaje enviado
                 RichTextBox nuevoRTB = CrearNuevoRTB(RichMessage, panelUser.Width - 40);
-                
-                // Highlight @mentions in the rich text box
+                nuevoRTB.Tag = "mensaje"; // Importante para limpieza
                 HighlightMentions(nuevoRTB);
-                
+
                 panelUser.Controls.Add(nuevoRTB);
 
-                // Positioning code...
-                int padding = 30;
-                int y = panelUser.Height - padding;
-
-                foreach (Control ctrl in panelUser.Controls.OfType<RichTextBox>().Where(c => c != RichMessage).Reverse())
+                // Agregar espacio invisible en panelUser2 para mantener el orden
+                RichTextBox espacio = new RichTextBox
                 {
-                    y -= ctrl.Height + padding;
-                    ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, y);
-                }
-                
-                // If chat is selected, store the message with mention information
+                    Height = nuevoRTB.Height,
+                    Width = 1,
+                    Tag = "mensaje",
+                    BackColor = Color.FromArgb(25, 28, 31),
+                    BorderStyle = BorderStyle.None,
+                    ReadOnly = true,
+                    Enabled = false,
+                    Visible = false
+                };
+                panelUser2.Controls.Add(espacio);
+
+                // Reposicionar mensajes en ambos paneles
+                ReposicionarMensajes();
+
+                // Guardar en la base de datos
                 if (treeViewChats.SelectedNode?.Tag != null)
                 {
                     int id_chat = (int)treeViewChats.SelectedNode.Tag;
@@ -250,6 +263,140 @@ namespace UniChat
             RichMessage.ForeColor = Color.Gray;
             RichMessage.Focus();
         }
+
+        private void CargarMensajesChat(int id_chat)
+        {
+            // Elimina solo los mensajes previos (Tag == "mensaje") de ambos paneles
+            foreach (Control ctrl in panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").ToList())
+            {
+                panelUser.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
+            foreach (Control ctrl in panelUser2.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").ToList())
+            {
+                panelUser2.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
+
+            try
+            {
+                using (var connection = DbConfig.GetOpenConnection())
+                {
+                    string query = @"
+                SELECT m.content, m.sendingDate, m.id_user, u.username
+                FROM messages m
+                INNER JOIN users u ON m.id_user = u.id_user
+                WHERE m.id_chat = @id_chat
+                ORDER BY m.sendingDate ASC";
+                    using (var cmd = new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            var mensajesUser = new List<Control>();
+                            var mensajesUser2 = new List<Control>();
+                            int padding = 30;
+
+                            while (reader.Read())
+                            {
+                                string contenido = reader["content"].ToString();
+                                DateTime fecha = Convert.ToDateTime(reader["sendingDate"]);
+                                int idUser = Convert.ToInt32(reader["id_user"]);
+                                string username = reader["username"].ToString();
+
+                                // Crea el RichTextBox del mensaje
+                                RichTextBox rtb = new RichTextBox
+                                {
+                                    BackColor = Color.FromArgb(25, 28, 31),
+                                    ForeColor = Color.White,
+                                    Font = new Font("Century Gothic", 9, FontStyle.Regular),
+                                    BorderStyle = BorderStyle.None,
+                                    ReadOnly = true,
+                                    Multiline = true,
+                                    WordWrap = true,
+                                    Tag = "mensaje",
+                                    Text = $"{username}: {contenido}\n{fecha:HH:mm}"
+                                };
+                                HighlightMentions(rtb);
+                                rtb.Width = Math.Min(panelUser.Width - 40, rtb.PreferredSize.Width);
+                                rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
+
+                                // Espacio invisible
+                                RichTextBox espacio = new RichTextBox
+                                {
+                                    Height = rtb.Height,
+                                    Width = 1,
+                                    Tag = "mensaje",
+                                    BackColor = Color.FromArgb(25, 28, 31),
+                                    BorderStyle = BorderStyle.None,
+                                    ReadOnly = true,
+                                    Enabled = false,
+                                    Visible = false
+                                };
+
+                                if (idUser == CurrentUser.IdUser)
+                                {
+                                    mensajesUser.Add(rtb);
+                                    mensajesUser2.Add(espacio);
+                                }
+                                else
+                                {
+                                    mensajesUser2.Add(rtb);
+                                    mensajesUser.Add(espacio);
+                                }
+                            }
+
+                            // Posiciona los mensajes desde abajo hacia arriba en cada panel
+                            int yUser = panelUser.Height - padding;
+                            int yUser2 = panelUser2.Height - padding;
+
+                            foreach (var ctrl in mensajesUser.AsEnumerable().Reverse())
+                            {
+                                yUser -= ctrl.Height + padding;
+                                ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, yUser);
+                                panelUser.Controls.Add(ctrl);
+                                ctrl.BringToFront();
+                            }
+                            foreach (var ctrl in mensajesUser2.AsEnumerable().Reverse())
+                            {
+                                yUser2 -= ctrl.Height + padding;
+                                ctrl.Location = new Point(padding, yUser2);
+                                panelUser2.Controls.Add(ctrl);
+                                ctrl.BringToFront();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Error al cargar los mensajes: " + ex.Message);
+            }
+        }
+
+        // Reposiciona los mensajes en ambos paneles (llamar después de agregar mensajes manuales)
+        private void ReposicionarMensajes()
+        {
+            int padding = 30;
+            int yUser = panelUser.Height - padding;
+            int yUser2 = panelUser2.Height - padding;
+
+            var mensajesUser = panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").Reverse();
+            var mensajesUser2 = panelUser2.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").Reverse();
+
+            foreach (var ctrl in mensajesUser)
+            {
+                yUser -= ctrl.Height + padding;
+                ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, yUser);
+            }
+            foreach (var ctrl in mensajesUser2)
+            {
+                yUser2 -= ctrl.Height + padding;
+                ctrl.Location = new Point(padding, yUser2);
+            }
+        }
+
 
 
         // Function to highlight @mentions in a RichTextBox
@@ -418,102 +565,11 @@ namespace UniChat
             }
         }
 
-        private void CargarMensajesChat(int id_chat)
-        {
-            // Elimina solo los mensajes previos (RichTextBox con Tag == "mensaje")
-            foreach (Control ctrl in panelUser.Controls.OfType<RichTextBox>().Where(c => (string)c.Tag == "mensaje").ToList())
-            {
-                panelUser.Controls.Remove(ctrl);
-                ctrl.Dispose();
-            }
-
-            try
-            {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    string query = @"
-                SELECT m.content, m.sendingDate, m.id_user, u.username
-                FROM messages m
-                INNER JOIN users u ON m.id_user = u.id_user
-                WHERE m.id_chat = @id_chat
-                ORDER BY m.sendingDate ASC";
-                    using (var cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            int padding = 30;
-                            int y = panelUser.Height - padding;
-                            var mensajes = new List<Tuple<RichTextBox, int>>(); // RichTextBox, id_user
-
-                            while (reader.Read())
-                            {
-                                string contenido = reader["content"].ToString();
-                                DateTime fecha = Convert.ToDateTime(reader["sendingDate"]);
-                                int idUser = Convert.ToInt32(reader["id_user"]);
-                                string username = reader["username"].ToString();
-
-                                // Crea un RichTextBox para el mensaje
-                                RichTextBox rtb = new RichTextBox();
-                                rtb.BackColor = Color.FromArgb(25, 28, 31);
-                                rtb.ForeColor = Color.White;
-                                rtb.Font = new Font("Century Gothic", 9, FontStyle.Regular);
-                                rtb.BorderStyle = BorderStyle.None;
-                                rtb.ReadOnly = true;
-                                rtb.Multiline = true;
-                                rtb.WordWrap = true;
-                                rtb.Tag = "mensaje"; // Marca este control como mensaje
-
-                                // Muestra el nombre del usuario, el mensaje y la fecha
-                                rtb.Text = $"{username}: {contenido}\n{fecha:HH:mm}";
-
-                                // Resalta menciones
-                                HighlightMentions(rtb);
-
-                                // Ajusta tamaño
-                                rtb.Width = Math.Min(panelUser.Width - 40, rtb.PreferredSize.Width);
-                                rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
-
-                                // Añade el RichTextBox y el id del usuario a la lista
-                                mensajes.Add(new Tuple<RichTextBox, int>(rtb, idUser));
-                            }
-
-                            // Posiciona los mensajes desde abajo hacia arriba
-                            foreach (var tuple in mensajes.AsEnumerable().Reverse())
-                            {
-                                RichTextBox rtb = tuple.Item1;
-                                int idUser = tuple.Item2;
-                                y -= rtb.Height + padding;
-
-                                // Si el mensaje es del usuario actual, a la derecha; si no, a la izquierda
-                                if (idUser == CurrentUser.IdUser)
-                                {
-                                    rtb.Location = new Point(panelUser.Width - rtb.Width - padding, y);
-                                }
-                                else
-                                {
-                                    rtb.Location = new Point(padding, y);
-                                }
-                                panelUser.Controls.Add(rtb);
-                                rtb.BringToFront();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Error al cargar los mensajes: " + ex.Message);
-            }
-        }
-
-
-
         //Metodo para cargar los chats del treeview al cargar el formulario bro
         public void CargarChatsUsuario(TreeView treeView)
         {
             treeView.Nodes.Clear();
+            panelUser.Controls.Clear();
             try
             {
                 using (var connection = DbConfig.GetOpenConnection())
@@ -525,23 +581,24 @@ namespace UniChat
                 INNER JOIN chat_members cm ON c.id_chat = cm.id_chat
                 WHERE cm.id_user = @id_user";
 
-                    using (var cmd = new MySqlCommand(query, connection))
-                    {
+
+                using (var cmd = new MySqlCommand(query, connection))
+                      {
                         cmd.Parameters.AddWithValue("@id_user", CurrentUser.IdUser);
 
                         using (var reader = cmd.ExecuteReader())
-                        {
+                        {   
                             while (reader.Read())
-                            {
+                                {
                                 int idChat = Convert.ToInt32(reader["id_chat"]);
                                 string nombreChat = reader["chat_name"].ToString();
 
                                 TreeNode nodo = new TreeNode(nombreChat);
                                 nodo.Tag = idChat; // Guarda el id en el nodo
                                 treeView.Nodes.Add(nodo);
+                                }
                             }
                         }
-                    }
                 }
             }
             catch (MySqlException ex)
@@ -781,21 +838,5 @@ namespace UniChat
 
             panelEmoji.Visible = false;
         }
-
-
-        /*
-            { ":happy:", "😀"},
-            { ":sad:", "😔" },
-            { ":angry:", "😡" },
-            { ":cry:", "😭" },
-            { ":eww:", "🤢" },
-            { ":like:", "👍" },
-            { ":corazon:", "❤️" },
-            { ":lover:", "🥰" },
-            { ":kiss:", "😘" },
-            { ":pray:", "🙏" },
-            { ":ajajaj:", "🤣" },
-            { ":cool:", "😎" }
-         */
     }
 }
