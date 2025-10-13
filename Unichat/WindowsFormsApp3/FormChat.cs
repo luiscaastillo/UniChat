@@ -16,6 +16,23 @@ namespace UniChat
 {
     public partial class FormChat : Form
     {
+        // 🌟 MAPEO DE EMOJIS (códigos de texto a Unicode)
+        private readonly Dictionary<string, string> EmojiMap = new Dictionary<string, string>
+        {
+            { ":happy:", "😀"},
+            { ":sad:", "😔" },
+            { ":angry:", "😡" },
+            { ":cry:", "😭" },
+            { ":eww:", "🤢" },
+            { ":like:", "👍" },
+            { ":corazon:", "❤️" },
+            { ":lover:", "🥰" },
+            { ":kiss:", "😘" },
+            { ":pray:", "🙏" },
+            { ":ajajaj:", "🤣" },
+            { ":cool:", "😎" }
+        };
+
         public FormChat()
         {
             InitializeComponent();
@@ -42,11 +59,11 @@ namespace UniChat
             treeViewChats.BackColor = Color.FromArgb(25, 28, 31);
 
             //Botones e iconos 
-            pictureUser.Image = Image.FromFile("user.png"); 
+            pictureUser.Image = Image.FromFile("user.png");
             pictureUser.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureSala.Image = Image.FromFile("group.png");
             pictureSala.SizeMode = PictureBoxSizeMode.StretchImage;
-            BEnviarMsj.Image = Image.FromFile("send.png"); 
+            BEnviarMsj.Image = Image.FromFile("send.png");
             BEnviarMsj.SizeMode = PictureBoxSizeMode.StretchImage;
             BEmoji.Image = Image.FromFile("emoji.png");
             BEmoji.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -60,7 +77,7 @@ namespace UniChat
             treeViewChats.ForeColor = Color.White;
             labelUsername.Font = new Font("Century Gothic", 13, FontStyle.Bold);
             //TextBox de enviar mensaje
-            RichMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);    
+            RichMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);
 
             //Aplicar cuando se cierre el FormChat, se cierre toda la aplicación
             this.FormClosed += (s, e) => Application.Exit();
@@ -84,31 +101,28 @@ namespace UniChat
 
         private void FormChat_Load(object sender, EventArgs e)
         {
-            //Cambiar el texto y color de los TextBox al iniciar
+            // Cambiar el texto y color de los RichMessage al iniciar
             RichMessage.Text = "Escribe un mensaje";
             RichMessage.ForeColor = Color.Gray;
 
-            //Cargar las funciones de textBoxMessage
-            /*
-            textBoxMessage.Enter += textBoxMessage_Enter;
-            textBoxMessage.Leave += textBoxMessage_Leave;
-            textBoxMessage.KeyDown += textBoxMessage_KeyDown;
-            */
-
+            // Cargar las funciones de RichMessage
             RichMessage.Enter += RichMessage_Enter;
             RichMessage.Leave += RichMessage_Leave;
             RichMessage.KeyDown += RichMessage_KeyDown;
-            //Implementación del TreeView
+
+            // Implementación del TreeView
             CargarChatsUsuario(treeViewChats);
             labelUsername.Text = CurrentUser.Username;
 
-            //Ocultar el panel de emojis al iniciar
+            // Ocultar el panel de emojis al iniciar
             panelEmoji.Visible = false;
+
         }
         private void textBoxMessage_TextChanged(object sender, EventArgs e)
         {
 
         }
+
         //Con esta función se puede dar la tecla Enter y se hace el envió de los mensajes
         private void RichMessage_KeyDown(object sender, KeyEventArgs e)
         {
@@ -148,7 +162,7 @@ namespace UniChat
 
         private void panelUser_Paint(object sender, PaintEventArgs e)
         {
-           
+
         }
 
         private void pictureUser_Click(object sender, EventArgs e)
@@ -190,44 +204,77 @@ namespace UniChat
             // Limpia el textbox para el siguiente mensaje
             RichMessage.Text = "";
             RichMessage.ForeColor = Color.Gray;
-        }
-        */
+        }*/
+
 
         private void BEnviarMsj_Click(object sender, EventArgs e)
         {
             string mensaje = RichMessage.Text.Trim();
+
             if (!string.IsNullOrEmpty(mensaje) && mensaje != "Escribe un mensaje")
             {
-                int padding = 15; // margen lateral
-              
-                RichTextBox mensajeBox = new RichTextBox();
-                mensajeBox.Rtf = RichMessage.Rtf;
-                mensajeBox.ReadOnly = true;
-                mensajeBox.BorderStyle = BorderStyle.None;
-                mensajeBox.BackColor = Color.FromArgb(25, 28, 31);
-                mensajeBox.ForeColor = Color.White;
-                mensajeBox.Font = new Font("Century Gothic", 9, FontStyle.Regular);
-                mensajeBox.Height = 20;
-                mensajeBox.ScrollBars = RichTextBoxScrollBars.None;
+                //modifica por el Unicode
+                foreach (var entry in EmojiMap)
+                {
+                    // Reemplaza todas las instancias del código de texto por el carácter Unicode
+                    RichMessage.Text = RichMessage.Text.Replace(entry.Key, entry.Value);
+                }
 
-                // Agrega el mensaje al panel
-                panelUser.Controls.Add(mensajeBox);
+                RichMessage.SelectAll();
+                RichMessage.SelectionColor = Color.White;
+                RichMessage.DeselectAll(); // Opcional, para quitar la selección
 
-                // Posiciona manualmente cada RichTextBox (de abajo hacia arriba)
-                
+                // Crear un nuevo RichTextBox (la "burbuja" del mensaje)
+                RichTextBox nuevoRTB = CrearNuevoRTB(RichMessage, panelUser.Width - 40);
+
+                panelUser.Controls.Add(nuevoRTB);
+
+                //Posicionamiento
+                int padding = 30;
                 int y = panelUser.Height - padding;
+
+                // Iteramos en orden inverso sobre todos los RichTextBox que NO son el RichMessage de entrada
                 foreach (Control ctrl in panelUser.Controls.OfType<RichTextBox>().Where(c => c != RichMessage).Reverse())
                 {
-                    int x = panelUser.Width - ctrl.Width - padding;
-                    ctrl.Location = new Point(x,y - 60);
                     y -= ctrl.Height + padding;
+                    // Posiciona el mensaje a la derecha (para simular el mensaje del usuario actual)
+                    ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, y);
+
+                    // Asegura que el texto sea blanco (aunque ya se hizo en CrearNuevoRTB)
+                    ctrl.ForeColor = Color.White;
                 }
-                
             }
-            RichMessage.Clear();
-            RichMessage.ForeColor = Color.Gray;
+
             RichMessage.Text = "";
+            RichMessage.ForeColor = Color.Gray;
+
+            // Devolver el foco al RichTextBox si lo deseas
+            RichMessage.Focus();
         }
+
+
+        // Función para extraer todo el contenido de un RichTextBox en uno nuevo
+        private RichTextBox CrearNuevoRTB(RichTextBox original, int maxWidth)
+        {
+            RichTextBox nuevoRTB = new RichTextBox();
+            nuevoRTB.BackColor = Color.FromArgb(25, 28, 31);
+            nuevoRTB.ForeColor = Color.White;
+            nuevoRTB.Font = new Font("Century Gothic", 9, FontStyle.Regular);
+            nuevoRTB.BorderStyle = BorderStyle.None;
+            nuevoRTB.ReadOnly = true;
+            nuevoRTB.Multiline = true;
+            nuevoRTB.WordWrap = true;
+
+            // Copiar texto + emojis
+            nuevoRTB.Rtf = original.Rtf;
+
+            // Ajustar tamaño según contenido
+            nuevoRTB.Width = Math.Min(maxWidth, nuevoRTB.PreferredSize.Width);
+            nuevoRTB.Height = nuevoRTB.GetPositionFromCharIndex(nuevoRTB.TextLength).Y + 20;
+
+            return nuevoRTB;
+        }
+
 
         private void BEmoji_Click(object sender, EventArgs e)
         {
@@ -237,15 +284,54 @@ namespace UniChat
 
             panelEmoji.Visible = true; // Alterna la visibilidad del panel de emojis
 
+            //hacer un switch para cada emoji que se agregue
+            //ejemplo: richMessage.Text += "\U0001F60A"; // Agrega un emoji de ejemplo
+
             happy.Image = Image.FromFile("happy.png");
             happy.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            sad.Image = Image.FromFile("sad.png");
+            sad.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            angry.Image = Image.FromFile("angry.png");
+            angry.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            cry.Image = Image.FromFile("cry.png");
+            cry.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            eww.Image = Image.FromFile("eww.png");
+            eww.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            like.Image = Image.FromFile("like.png");
+            like.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            corazon.Image = Image.FromFile("corazon.png");
+            corazon.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            lover.Image = Image.FromFile("lover.png");
+            lover.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            kiss.Image = Image.FromFile("kiss.png");
+            kiss.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            pray.Image = Image.FromFile("pray.png");
+            pray.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            ajajaja.Image = Image.FromFile("risa.png");
+            ajajaja.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            cool.Image = Image.FromFile("cool.png");
+            cool.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            close.Image = Image.FromFile("salirEmoji.png");
+            close.SizeMode = PictureBoxSizeMode.StretchImage;
             //textBoxMessage.Text += "\U0001F60A"; // Agrega un emoji de ejemplo
         }
 
         private void labelUsername_Click(object sender, EventArgs e)
         {
             //Implementar que el usuario que tecleo se cambie por el que este en la base de datos
-            
+
         }
 
         private void pictureSala_Click(object sender, EventArgs e)
@@ -262,7 +348,7 @@ namespace UniChat
 
 
         //Boton para crear un nuevo chat (Sala)
-        private void BNewChat_Click(object sender, EventArgs e) 
+        private void BNewChat_Click(object sender, EventArgs e)
         {
             using (var formSala = new FormNuevaSala())
             {
@@ -337,7 +423,7 @@ namespace UniChat
             {
                 int idChatSeleccionado = (int)treeViewChats.SelectedNode.Tag;
                 var confirmResult = MessageBox.Show("¿Estás seguro de que deseas eliminar este chat?", "Confirmar eliminación", MessageBoxButtons.YesNo);
-                
+
                 if (confirmResult == DialogResult.Yes)
                 {
                     try
@@ -377,9 +463,9 @@ namespace UniChat
 
         private void panelEmoji_Paint(object sender, PaintEventArgs e)
         {
-            //si se toca cada emoji agregarlo al richtextbox mostrar la imagen
-            happy.Click -= Happy_Click;
-            happy.Click += Happy_Click;
+            //si toca este boton quiero que llame al Dictionary y busque el emoji que coincida con el nombre del picturebox
+            // y lo agregue al richtextbox
+
         }
 
         private void RichMessage_TextChanged(object sender, EventArgs e)
@@ -387,6 +473,7 @@ namespace UniChat
 
         }
 
+        /*
         private void Happy_Click(object sender, EventArgs e)
         {
             try
@@ -411,27 +498,218 @@ namespace UniChat
 
         private void InsertImageIntoRichTextBox(RichTextBox rtb, Image image)
         {
-            this.BackColor = Color.White;
             if (image == null || rtb == null) return;
 
             // 🔹 Ajusta estos valores a gusto
             int customWidth = 15;  // ancho deseado (puedes probar 25, 30, 50…)
             int customHeight = 15; // alto deseado (igual al ancho para mantenerlo cuadrado)
-
+            /*
             Image resized = new Bitmap(image, new Size(customWidth, customHeight));
 
             Clipboard.SetImage(resized);
             rtb.Paste();
 
             resized.Dispose();
+            
+            using (Image resized = new Bitmap(image, new Size(customWidth, customHeight)))
+            {
+                bool wasReadOnly = rtb.ReadOnly;
+                rtb.ReadOnly = false;  // Permitir edición temporalmente
+                rtb.Focus();           // Asegurar que el control tenga el foco
+
+                Clipboard.SetImage(resized);
+                rtb.Paste();
+
+                rtb.ReadOnly = wasReadOnly;
+            }
         }
-
-
-
+        */
 
         private void happy_Click(object sender, EventArgs e)
         {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":happy:") ? EmojiMap[":happy:"] : "😀";
 
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
         }
+        private void sad_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":sad:") ? EmojiMap[":sad:"] : "😔";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void angry_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":angry:") ? EmojiMap[":angry:"] : "😡";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+        private void close_Click(object sender, EventArgs e)
+        {
+            panelEmoji.Visible = false; // Oculta el panel de emojis
+        }
+
+        private void cry_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":cry:") ? EmojiMap[":cry:"] : "😭";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void eww_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":eww:") ? EmojiMap[":eww:"] : "🤢";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void like_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":like:") ? EmojiMap[":like:"] : "👍";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void corazon_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":corazon:") ? EmojiMap[":corazon:"] : "❤️";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void lover_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":lover:") ? EmojiMap[":lover:"] : "🥰";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void kiss_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":kiss:") ? EmojiMap[":kiss:"] : "😘";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void pray_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":pray:") ? EmojiMap[":pray:"] : "🙏";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void ajajaja_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":ajajaj:") ? EmojiMap[":ajajaj:"] : "🤣";
+        
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+        private void cool_Click(object sender, EventArgs e)
+        {
+            // Obtiene el emoji Unicode desde el diccionario
+            string emojiUnicode = EmojiMap.ContainsKey(":cool:") ? EmojiMap[":cool:"] : "😎";
+
+            // Inserta el emoji en la posición actual del cursor
+            int pos = RichMessage.SelectionStart;
+            RichMessage.Text = RichMessage.Text.Insert(pos, emojiUnicode);
+            RichMessage.SelectionStart = pos + emojiUnicode.Length;
+            RichMessage.Focus();
+
+            panelEmoji.Visible = false;
+        }
+
+
+        /*
+            { ":happy:", "😀"},
+            { ":sad:", "😔" },
+            { ":angry:", "😡" },
+            { ":cry:", "😭" },
+            { ":eww:", "🤢" },
+            { ":like:", "👍" },
+            { ":corazon:", "❤️" },
+            { ":lover:", "🥰" },
+            { ":kiss:", "😘" },
+            { ":pray:", "🙏" },
+            { ":ajajaj:", "🤣" },
+            { ":cool:", "😎" }
+         */
     }
 }
