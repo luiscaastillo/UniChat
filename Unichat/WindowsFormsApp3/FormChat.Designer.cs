@@ -62,6 +62,7 @@
             this.labelUsername = new System.Windows.Forms.Label();
             this.BEmoji = new System.Windows.Forms.PictureBox();
             this.BEnviarMsj = new System.Windows.Forms.PictureBox();
+            this.deleteUser = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).BeginInit();
             this.panelSalas.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala1)).BeginInit();
@@ -88,14 +89,15 @@
             ((System.ComponentModel.ISupportInitialize)(this.BLogOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEmoji)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEnviarMsj)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.deleteUser)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureUser
             // 
-            this.pictureUser.Location = new System.Drawing.Point(29, 11);
-            this.pictureUser.Margin = new System.Windows.Forms.Padding(4);
+            this.pictureUser.Location = new System.Drawing.Point(44, 17);
+            this.pictureUser.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.pictureUser.Name = "pictureUser";
-            this.pictureUser.Size = new System.Drawing.Size(48, 44);
+            this.pictureUser.Size = new System.Drawing.Size(72, 69);
             this.pictureUser.TabIndex = 0;
             this.pictureUser.TabStop = false;
             this.pictureUser.Click += new System.EventHandler(this.pictureUser_Click);
@@ -103,17 +105,18 @@
             // labelSalas
             // 
             this.labelSalas.AutoSize = true;
-            this.labelSalas.Font = new System.Drawing.Font("Century Gothic", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelSalas.Location = new System.Drawing.Point(20, 21);
-            this.labelSalas.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelSalas.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSalas.Location = new System.Drawing.Point(30, 33);
+            this.labelSalas.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.labelSalas.Name = "labelSalas";
-            this.labelSalas.Size = new System.Drawing.Size(170, 28);
+            this.labelSalas.Size = new System.Drawing.Size(261, 44);
             this.labelSalas.TabIndex = 4;
             this.labelSalas.Text = "Salas de chat";
             this.labelSalas.Click += new System.EventHandler(this.label2_Click);
             // 
             // panelSalas
             // 
+            this.panelSalas.Controls.Add(this.deleteUser);
             this.panelSalas.Controls.Add(this.treeViewUsers);
             this.panelSalas.Controls.Add(this.label1);
             this.panelSalas.Controls.Add(this.pictureSala1);
@@ -124,97 +127,97 @@
             this.panelSalas.Controls.Add(this.labelChats);
             this.panelSalas.Controls.Add(this.pictureSala);
             this.panelSalas.Controls.Add(this.panelSalasName);
-            this.panelSalas.Location = new System.Drawing.Point(16, 16);
-            this.panelSalas.Margin = new System.Windows.Forms.Padding(4);
+            this.panelSalas.Location = new System.Drawing.Point(24, 25);
+            this.panelSalas.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panelSalas.Name = "panelSalas";
-            this.panelSalas.Size = new System.Drawing.Size(267, 676);
+            this.panelSalas.Size = new System.Drawing.Size(400, 1056);
             this.panelSalas.TabIndex = 6;
             this.panelSalas.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
             // 
             // treeViewUsers
             // 
-            this.treeViewUsers.Location = new System.Drawing.Point(30, 435);
-            this.treeViewUsers.Margin = new System.Windows.Forms.Padding(4);
+            this.treeViewUsers.Location = new System.Drawing.Point(45, 680);
+            this.treeViewUsers.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.treeViewUsers.Name = "treeViewUsers";
-            this.treeViewUsers.Size = new System.Drawing.Size(160, 228);
+            this.treeViewUsers.Size = new System.Drawing.Size(238, 354);
             this.treeViewUsers.TabIndex = 15;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("OCR A Extended", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(86, 393);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(129, 614);
+            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(75, 23);
+            this.label1.Size = new System.Drawing.Size(105, 37);
             this.label1.TabIndex = 13;
             this.label1.Text = "Users";
             // 
             // pictureSala1
             // 
-            this.pictureSala1.Location = new System.Drawing.Point(30, 382);
-            this.pictureSala1.Margin = new System.Windows.Forms.Padding(4);
+            this.pictureSala1.Location = new System.Drawing.Point(45, 597);
+            this.pictureSala1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.pictureSala1.Name = "pictureSala1";
-            this.pictureSala1.Size = new System.Drawing.Size(48, 44);
+            this.pictureSala1.Size = new System.Drawing.Size(72, 69);
             this.pictureSala1.TabIndex = 14;
             this.pictureSala1.TabStop = false;
             // 
             // addUser
             // 
-            this.addUser.Location = new System.Drawing.Point(208, 453);
-            this.addUser.Margin = new System.Windows.Forms.Padding(4);
+            this.addUser.Location = new System.Drawing.Point(312, 708);
+            this.addUser.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.addUser.Name = "addUser";
-            this.addUser.Size = new System.Drawing.Size(33, 30);
+            this.addUser.Size = new System.Drawing.Size(50, 47);
             this.addUser.TabIndex = 12;
             this.addUser.TabStop = false;
             this.addUser.Click += new System.EventHandler(this.addUser_Click);
             // 
             // BDeleteChat
             // 
-            this.BDeleteChat.Location = new System.Drawing.Point(208, 176);
-            this.BDeleteChat.Margin = new System.Windows.Forms.Padding(4);
+            this.BDeleteChat.Location = new System.Drawing.Point(312, 275);
+            this.BDeleteChat.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.BDeleteChat.Name = "BDeleteChat";
-            this.BDeleteChat.Size = new System.Drawing.Size(33, 30);
+            this.BDeleteChat.Size = new System.Drawing.Size(50, 47);
             this.BDeleteChat.TabIndex = 11;
             this.BDeleteChat.TabStop = false;
             this.BDeleteChat.Click += new System.EventHandler(this.BDeleteChat_Click);
             // 
             // BNewChat
             // 
-            this.BNewChat.Location = new System.Drawing.Point(208, 139);
-            this.BNewChat.Margin = new System.Windows.Forms.Padding(4);
+            this.BNewChat.Location = new System.Drawing.Point(312, 217);
+            this.BNewChat.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.BNewChat.Name = "BNewChat";
-            this.BNewChat.Size = new System.Drawing.Size(33, 30);
+            this.BNewChat.Size = new System.Drawing.Size(50, 47);
             this.BNewChat.TabIndex = 10;
             this.BNewChat.TabStop = false;
             this.BNewChat.Click += new System.EventHandler(this.BNewChat_Click);
             // 
             // treeViewChats
             // 
-            this.treeViewChats.Location = new System.Drawing.Point(25, 139);
-            this.treeViewChats.Margin = new System.Windows.Forms.Padding(4);
+            this.treeViewChats.Location = new System.Drawing.Point(38, 217);
+            this.treeViewChats.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.treeViewChats.Name = "treeViewChats";
-            this.treeViewChats.Size = new System.Drawing.Size(160, 228);
+            this.treeViewChats.Size = new System.Drawing.Size(238, 354);
             this.treeViewChats.TabIndex = 10;
             this.treeViewChats.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeViewChats_AfterSelect);
             // 
             // labelChats
             // 
             this.labelChats.AutoSize = true;
-            this.labelChats.Font = new System.Drawing.Font("OCR A Extended", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelChats.Location = new System.Drawing.Point(81, 97);
-            this.labelChats.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelChats.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelChats.Location = new System.Drawing.Point(122, 152);
+            this.labelChats.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.labelChats.Name = "labelChats";
-            this.labelChats.Size = new System.Drawing.Size(75, 23);
+            this.labelChats.Size = new System.Drawing.Size(106, 37);
             this.labelChats.TabIndex = 9;
             this.labelChats.Text = "Chats";
             // 
             // pictureSala
             // 
-            this.pictureSala.Location = new System.Drawing.Point(25, 86);
-            this.pictureSala.Margin = new System.Windows.Forms.Padding(4);
+            this.pictureSala.Location = new System.Drawing.Point(38, 134);
+            this.pictureSala.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.pictureSala.Name = "pictureSala";
-            this.pictureSala.Size = new System.Drawing.Size(48, 44);
+            this.pictureSala.Size = new System.Drawing.Size(72, 69);
             this.pictureSala.TabIndex = 9;
             this.pictureSala.TabStop = false;
             this.pictureSala.Click += new System.EventHandler(this.pictureSala_Click);
@@ -223,19 +226,19 @@
             // 
             this.panelSalasName.Controls.Add(this.labelSalas);
             this.panelSalasName.Location = new System.Drawing.Point(0, 0);
-            this.panelSalasName.Margin = new System.Windows.Forms.Padding(4);
+            this.panelSalasName.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panelSalasName.Name = "panelSalasName";
-            this.panelSalasName.Size = new System.Drawing.Size(267, 68);
+            this.panelSalasName.Size = new System.Drawing.Size(400, 106);
             this.panelSalasName.TabIndex = 5;
             // 
             // panelUser
             // 
             this.panelUser.AutoScroll = true;
             this.panelUser.AutoScrollMargin = new System.Drawing.Size(1, 1);
-            this.panelUser.Location = new System.Drawing.Point(320, 90);
-            this.panelUser.Margin = new System.Windows.Forms.Padding(4);
+            this.panelUser.Location = new System.Drawing.Point(480, 141);
+            this.panelUser.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panelUser.Name = "panelUser";
-            this.panelUser.Size = new System.Drawing.Size(582, 511);
+            this.panelUser.Size = new System.Drawing.Size(873, 798);
             this.panelUser.TabIndex = 8;
             this.panelUser.Paint += new System.Windows.Forms.PaintEventHandler(this.panelUser_Paint);
             // 
@@ -254,149 +257,149 @@
             this.panelEmoji.Controls.Add(this.sad);
             this.panelEmoji.Controls.Add(this.close);
             this.panelEmoji.Controls.Add(this.happy);
-            this.panelEmoji.Location = new System.Drawing.Point(919, 505);
-            this.panelEmoji.Margin = new System.Windows.Forms.Padding(4);
+            this.panelEmoji.Location = new System.Drawing.Point(1378, 789);
+            this.panelEmoji.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panelEmoji.Name = "panelEmoji";
-            this.panelEmoji.Size = new System.Drawing.Size(217, 174);
+            this.panelEmoji.Size = new System.Drawing.Size(326, 272);
             this.panelEmoji.TabIndex = 13;
             this.panelEmoji.Visible = false;
             this.panelEmoji.Paint += new System.Windows.Forms.PaintEventHandler(this.panelEmoji_Paint);
             // 
             // cool
             // 
-            this.cool.Location = new System.Drawing.Point(156, 117);
-            this.cool.Margin = new System.Windows.Forms.Padding(4);
+            this.cool.Location = new System.Drawing.Point(234, 183);
+            this.cool.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.cool.Name = "cool";
-            this.cool.Size = new System.Drawing.Size(40, 37);
+            this.cool.Size = new System.Drawing.Size(60, 58);
             this.cool.TabIndex = 17;
             this.cool.TabStop = false;
             this.cool.Click += new System.EventHandler(this.cool_Click);
             // 
             // ajajaja
             // 
-            this.ajajaja.Location = new System.Drawing.Point(156, 73);
-            this.ajajaja.Margin = new System.Windows.Forms.Padding(4);
+            this.ajajaja.Location = new System.Drawing.Point(234, 114);
+            this.ajajaja.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.ajajaja.Name = "ajajaja";
-            this.ajajaja.Size = new System.Drawing.Size(40, 37);
+            this.ajajaja.Size = new System.Drawing.Size(60, 58);
             this.ajajaja.TabIndex = 16;
             this.ajajaja.TabStop = false;
             this.ajajaja.Click += new System.EventHandler(this.ajajaja_Click);
             // 
             // pray
             // 
-            this.pray.Location = new System.Drawing.Point(156, 27);
-            this.pray.Margin = new System.Windows.Forms.Padding(4);
+            this.pray.Location = new System.Drawing.Point(234, 42);
+            this.pray.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.pray.Name = "pray";
-            this.pray.Size = new System.Drawing.Size(40, 37);
+            this.pray.Size = new System.Drawing.Size(60, 58);
             this.pray.TabIndex = 15;
             this.pray.TabStop = false;
             this.pray.Click += new System.EventHandler(this.pray_Click);
             // 
             // kiss
             // 
-            this.kiss.Location = new System.Drawing.Point(108, 117);
-            this.kiss.Margin = new System.Windows.Forms.Padding(4);
+            this.kiss.Location = new System.Drawing.Point(162, 183);
+            this.kiss.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.kiss.Name = "kiss";
-            this.kiss.Size = new System.Drawing.Size(40, 37);
+            this.kiss.Size = new System.Drawing.Size(60, 58);
             this.kiss.TabIndex = 14;
             this.kiss.TabStop = false;
             this.kiss.Click += new System.EventHandler(this.kiss_Click);
             // 
             // lover
             // 
-            this.lover.Location = new System.Drawing.Point(108, 73);
-            this.lover.Margin = new System.Windows.Forms.Padding(4);
+            this.lover.Location = new System.Drawing.Point(162, 114);
+            this.lover.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.lover.Name = "lover";
-            this.lover.Size = new System.Drawing.Size(40, 37);
+            this.lover.Size = new System.Drawing.Size(60, 58);
             this.lover.TabIndex = 13;
             this.lover.TabStop = false;
             this.lover.Click += new System.EventHandler(this.lover_Click);
             // 
             // corazon
             // 
-            this.corazon.Location = new System.Drawing.Point(108, 27);
-            this.corazon.Margin = new System.Windows.Forms.Padding(4);
+            this.corazon.Location = new System.Drawing.Point(162, 42);
+            this.corazon.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.corazon.Name = "corazon";
-            this.corazon.Size = new System.Drawing.Size(40, 37);
+            this.corazon.Size = new System.Drawing.Size(60, 58);
             this.corazon.TabIndex = 12;
             this.corazon.TabStop = false;
             this.corazon.Click += new System.EventHandler(this.corazon_Click);
             // 
             // angry
             // 
-            this.angry.Location = new System.Drawing.Point(12, 117);
-            this.angry.Margin = new System.Windows.Forms.Padding(4);
+            this.angry.Location = new System.Drawing.Point(18, 183);
+            this.angry.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.angry.Name = "angry";
-            this.angry.Size = new System.Drawing.Size(40, 37);
+            this.angry.Size = new System.Drawing.Size(60, 58);
             this.angry.TabIndex = 11;
             this.angry.TabStop = false;
             // 
             // like
             // 
-            this.like.Location = new System.Drawing.Point(60, 117);
-            this.like.Margin = new System.Windows.Forms.Padding(4);
+            this.like.Location = new System.Drawing.Point(90, 183);
+            this.like.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.like.Name = "like";
-            this.like.Size = new System.Drawing.Size(40, 37);
+            this.like.Size = new System.Drawing.Size(60, 58);
             this.like.TabIndex = 10;
             this.like.TabStop = false;
             this.like.Click += new System.EventHandler(this.like_Click);
             // 
             // eww
             // 
-            this.eww.Location = new System.Drawing.Point(60, 73);
-            this.eww.Margin = new System.Windows.Forms.Padding(4);
+            this.eww.Location = new System.Drawing.Point(90, 114);
+            this.eww.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.eww.Name = "eww";
-            this.eww.Size = new System.Drawing.Size(40, 37);
+            this.eww.Size = new System.Drawing.Size(60, 58);
             this.eww.TabIndex = 9;
             this.eww.TabStop = false;
             this.eww.Click += new System.EventHandler(this.eww_Click);
             // 
             // cry
             // 
-            this.cry.Location = new System.Drawing.Point(60, 27);
-            this.cry.Margin = new System.Windows.Forms.Padding(4);
+            this.cry.Location = new System.Drawing.Point(90, 42);
+            this.cry.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.cry.Name = "cry";
-            this.cry.Size = new System.Drawing.Size(40, 37);
+            this.cry.Size = new System.Drawing.Size(60, 58);
             this.cry.TabIndex = 8;
             this.cry.TabStop = false;
             this.cry.Click += new System.EventHandler(this.cry_Click);
             // 
             // sad
             // 
-            this.sad.Location = new System.Drawing.Point(12, 73);
-            this.sad.Margin = new System.Windows.Forms.Padding(4);
+            this.sad.Location = new System.Drawing.Point(18, 114);
+            this.sad.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.sad.Name = "sad";
-            this.sad.Size = new System.Drawing.Size(40, 37);
+            this.sad.Size = new System.Drawing.Size(60, 58);
             this.sad.TabIndex = 7;
             this.sad.TabStop = false;
             this.sad.Click += new System.EventHandler(this.sad_Click);
             // 
             // close
             // 
-            this.close.Location = new System.Drawing.Point(196, 6);
-            this.close.Margin = new System.Windows.Forms.Padding(4);
+            this.close.Location = new System.Drawing.Point(294, 9);
+            this.close.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.close.Name = "close";
-            this.close.Size = new System.Drawing.Size(17, 16);
+            this.close.Size = new System.Drawing.Size(26, 25);
             this.close.TabIndex = 6;
             this.close.TabStop = false;
             this.close.Click += new System.EventHandler(this.close_Click);
             // 
             // happy
             // 
-            this.happy.Location = new System.Drawing.Point(12, 27);
-            this.happy.Margin = new System.Windows.Forms.Padding(4);
+            this.happy.Location = new System.Drawing.Point(18, 42);
+            this.happy.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.happy.Name = "happy";
-            this.happy.Size = new System.Drawing.Size(40, 37);
+            this.happy.Size = new System.Drawing.Size(60, 58);
             this.happy.TabIndex = 0;
             this.happy.TabStop = false;
             this.happy.Click += new System.EventHandler(this.happy_Click);
             // 
             // RichMessage
             // 
-            this.RichMessage.Location = new System.Drawing.Point(320, 605);
-            this.RichMessage.Margin = new System.Windows.Forms.Padding(4);
+            this.RichMessage.Location = new System.Drawing.Point(480, 945);
+            this.RichMessage.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.RichMessage.Name = "RichMessage";
-            this.RichMessage.Size = new System.Drawing.Size(559, 24);
+            this.RichMessage.Size = new System.Drawing.Size(836, 35);
             this.RichMessage.TabIndex = 12;
             this.RichMessage.Text = "";
             this.RichMessage.TextChanged += new System.EventHandler(this.RichMessage_TextChanged);
@@ -406,18 +409,18 @@
             this.panelName.Controls.Add(this.BLogOut);
             this.panelName.Controls.Add(this.pictureUser);
             this.panelName.Controls.Add(this.labelUsername);
-            this.panelName.Location = new System.Drawing.Point(291, 16);
-            this.panelName.Margin = new System.Windows.Forms.Padding(4);
+            this.panelName.Location = new System.Drawing.Point(436, 25);
+            this.panelName.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panelName.Name = "panelName";
-            this.panelName.Size = new System.Drawing.Size(611, 68);
+            this.panelName.Size = new System.Drawing.Size(916, 106);
             this.panelName.TabIndex = 11;
             // 
             // BLogOut
             // 
-            this.BLogOut.Location = new System.Drawing.Point(541, 11);
-            this.BLogOut.Margin = new System.Windows.Forms.Padding(4);
+            this.BLogOut.Location = new System.Drawing.Point(812, 17);
+            this.BLogOut.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.BLogOut.Name = "BLogOut";
-            this.BLogOut.Size = new System.Drawing.Size(48, 44);
+            this.BLogOut.Size = new System.Drawing.Size(72, 69);
             this.BLogOut.TabIndex = 9;
             this.BLogOut.TabStop = false;
             this.BLogOut.Click += new System.EventHandler(this.BLogOut_Click);
@@ -425,40 +428,50 @@
             // labelUsername
             // 
             this.labelUsername.AutoSize = true;
-            this.labelUsername.Font = new System.Drawing.Font("OCR A Extended", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelUsername.Location = new System.Drawing.Point(85, 21);
-            this.labelUsername.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelUsername.Location = new System.Drawing.Point(128, 33);
+            this.labelUsername.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.labelUsername.Name = "labelUsername";
-            this.labelUsername.Size = new System.Drawing.Size(75, 23);
+            this.labelUsername.Size = new System.Drawing.Size(114, 37);
             this.labelUsername.TabIndex = 8;
             this.labelUsername.Text = "@user";
             this.labelUsername.Click += new System.EventHandler(this.labelUsername_Click);
             // 
             // BEmoji
             // 
-            this.BEmoji.Location = new System.Drawing.Point(799, 637);
-            this.BEmoji.Margin = new System.Windows.Forms.Padding(4);
+            this.BEmoji.Location = new System.Drawing.Point(1198, 995);
+            this.BEmoji.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.BEmoji.Name = "BEmoji";
-            this.BEmoji.Size = new System.Drawing.Size(32, 26);
+            this.BEmoji.Size = new System.Drawing.Size(48, 41);
             this.BEmoji.TabIndex = 10;
             this.BEmoji.TabStop = false;
             this.BEmoji.Click += new System.EventHandler(this.BEmoji_Click);
             // 
             // BEnviarMsj
             // 
-            this.BEnviarMsj.Location = new System.Drawing.Point(839, 637);
-            this.BEnviarMsj.Margin = new System.Windows.Forms.Padding(4);
+            this.BEnviarMsj.Location = new System.Drawing.Point(1258, 995);
+            this.BEnviarMsj.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.BEnviarMsj.Name = "BEnviarMsj";
-            this.BEnviarMsj.Size = new System.Drawing.Size(32, 26);
+            this.BEnviarMsj.Size = new System.Drawing.Size(48, 41);
             this.BEnviarMsj.TabIndex = 9;
             this.BEnviarMsj.TabStop = false;
             this.BEnviarMsj.Click += new System.EventHandler(this.BEnviarMsj_Click);
             // 
+            // deleteUser
+            // 
+            this.deleteUser.Location = new System.Drawing.Point(312, 767);
+            this.deleteUser.Margin = new System.Windows.Forms.Padding(6);
+            this.deleteUser.Name = "deleteUser";
+            this.deleteUser.Size = new System.Drawing.Size(50, 47);
+            this.deleteUser.TabIndex = 16;
+            this.deleteUser.TabStop = false;
+            this.deleteUser.Click += new System.EventHandler(this.deleteUser_Click);
+            // 
             // FormChat
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1216, 705);
+            this.ClientSize = new System.Drawing.Size(1824, 1102);
             this.Controls.Add(this.panelEmoji);
             this.Controls.Add(this.panelName);
             this.Controls.Add(this.panelSalas);
@@ -466,7 +479,7 @@
             this.Controls.Add(this.BEnviarMsj);
             this.Controls.Add(this.BEmoji);
             this.Controls.Add(this.panelUser);
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "FormChat";
             this.Text = "FormChat";
             this.Load += new System.EventHandler(this.FormChat_Load);
@@ -499,6 +512,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.BLogOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEmoji)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BEnviarMsj)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.deleteUser)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -538,5 +552,6 @@
         private System.Windows.Forms.PictureBox sad;
         private System.Windows.Forms.PictureBox close;
         private System.Windows.Forms.PictureBox happy;
+        private System.Windows.Forms.PictureBox deleteUser;
     }
 }

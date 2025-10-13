@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient; //Conexion con la Base de datos
+﻿using MySql.Data.MySqlClient;
 using Mysqlx.Crud;
 using System;
 using System.Collections.Generic;
@@ -80,6 +80,8 @@ namespace UniChat
             addUser.SizeMode = PictureBoxSizeMode.StretchImage;
             BDeleteChat.Image = Image.FromFile("menos.png");
             BDeleteChat.SizeMode = PictureBoxSizeMode.StretchImage;
+            deleteUser.Image = Image.FromFile("menos.png");
+            deleteUser.SizeMode = PictureBoxSizeMode.StretchImage;
             labelUsername.Font = new Font("Century Gothic", 13, FontStyle.Bold);
             RichMessage.Font = new Font("Century Gothic", 9, FontStyle.Regular);
 
@@ -646,7 +648,45 @@ namespace UniChat
             rtb.ReadOnly = wasReadOnly; // Restaurar estado original
         }
 
-        private void addUser_Click(object sender, EventArgs e) { }
+        private void addUser_Click(object sender, EventArgs e) 
+        {
+            if (treeViewChats.SelectedNode?.Tag == null)
+            {
+                MessageBox.Show("Por favor, selecciona un chat primero.");
+                return;
+            }
+
+            int id_chat = (int)treeViewChats.SelectedNode.Tag;
+
+            using (var formAnadirUsuario = new FormAnadirUsuario(id_chat))
+            {
+                if (formAnadirUsuario.ShowDialog() == DialogResult.OK)
+                {
+                    // Recargar la lista de miembros del chat
+                    CargarChatMembers(id_chat);
+                }
+            }
+        }
+
+        private void deleteUser_Click(object sender, EventArgs e)
+        {
+            if (treeViewChats.SelectedNode?.Tag == null)
+            {
+                MessageBox.Show("Por favor, selecciona un chat primero.");
+                return;
+            }
+
+            int id_chat = (int)treeViewChats.SelectedNode.Tag;
+            
+            using (var formEliminarUsuario = new FormEliminarUsuario(id_chat))
+            {
+                if (formEliminarUsuario.ShowDialog() == DialogResult.OK)
+                {
+                    // Recargar la lista de miembros del chat
+                    CargarChatMembers(id_chat);
+                }
+            }
+        }
     }
 }
 
