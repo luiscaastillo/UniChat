@@ -70,34 +70,87 @@ namespace Unichat
             {
                 using (var connection = DbConfig.GetOpenConnection())
                 {
-                    string query = @"INSERT INTO chats (chatname, admin, n_msg, n_members)
-                             VALUES (@chatname, @admin, @n_msg, @n_members);
-                             SELECT LAST_INSERT_ID();"; //Query para poder ponerle un tagsito al treeview jiji
-
-                    using (var cmd = new MySqlCommand(query, connection))
+                    // First check if a chat with this name already exists
+                    string checkQuery = "SELECT id_chat FROM chats WHERE chat_name = @chat_name";
+                    using (var checkCmd = new MySqlCommand(checkQuery, connection))
                     {
-                        cmd.Parameters.AddWithValue("@chatname", nombreSala);
-                        cmd.Parameters.AddWithValue("@admin", CurrentUser.IdUser);
-                        cmd.Parameters.AddWithValue("@n_msg", 0);
-                        cmd.Parameters.AddWithValue("@n_members", 1);
+                        checkCmd.Parameters.AddWithValue("@chat_name", nombreSala);
+                        object existingid_chat = checkCmd.ExecuteScalar();
 
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && int.TryParse(result.ToString(), out int idChat))
+                        // If the chat already exists
+                        if (existingid_chat != null)
                         {
-                            MessageBox.Show("Sala creada exitosamente.");
-                            return idChat;
+                            int id_chat = Convert.ToInt32(existingid_chat);
+                            
+                            // Check if the user is already a member of this chat
+                            string memberCheckQuery = "SELECT COUNT(*) FROM chat_members WHERE id_chat = @id_chat AND id_user = @id_user";
+                            using (var memberCheckCmd = new MySqlCommand(memberCheckQuery, connection))
+                            {
+                                memberCheckCmd.Parameters.AddWithValue("@id_chat", id_chat);
+                                memberCheckCmd.Parameters.AddWithValue("@id_user", CurrentUser.IdUser);
+                                int memberCount = Convert.ToInt32(memberCheckCmd.ExecuteScalar());
+
+                                if (memberCount > 0)
+                                {
+                                    MessageBox.Show("Ya eres miembro de esta sala.");
+                                    return id_chat;
+                                }
+                                else
+                                {
+                                    // Add the user as a member to the existing chat
+                                    string joinQuery = "INSERT INTO chat_members (id_chat, id_user) VALUES (@id_chat, @id_user)";
+                                    using (var joinCmd = new MySqlCommand(joinQuery, connection))
+                                    {
+                                        joinCmd.Parameters.AddWithValue("@id_chat", id_chat);
+                                        joinCmd.Parameters.AddWithValue("@id_user", CurrentUser.IdUser);
+                                        joinCmd.ExecuteNonQuery();
+                                        
+                                        MessageBox.Show("Te has unido a la sala existente.");
+                                        return id_chat;
+                                    }
+                                }
+                            }
                         }
+                        // If the chat doesn't exist, create a new one
                         else
                         {
-                            MessageBox.Show("No se pudo crear la sala.");
-                            return -1;
+                            string insertQuery = @"INSERT INTO chats (chat_name, admin_id)
+                                        VALUES (@chat_name, @admin_id);
+                                        SELECT LAST_INSERT_ID();";
+
+                            using (var insertCmd = new MySqlCommand(insertQuery, connection))
+                            {
+                                insertCmd.Parameters.AddWithValue("@chat_name", nombreSala);
+                                insertCmd.Parameters.AddWithValue("@admin_id", CurrentUser.IdUser);
+
+                                object result = insertCmd.ExecuteScalar();
+                                if (result != null && int.TryParse(result.ToString(), out int idChat))
+                                {
+                                    // Add the creator as a member in chat_members table
+                                    string addMemberQuery = "INSERT INTO chat_members (id_chat, id_user) VALUES (@id_chat, @id_user)";
+                                    using (var addMemberCmd = new MySqlCommand(addMemberQuery, connection))
+                                    {
+                                        addMemberCmd.Parameters.AddWithValue("@id_chat", idChat);
+                                        addMemberCmd.Parameters.AddWithValue("@id_user", CurrentUser.IdUser);
+                                        addMemberCmd.ExecuteNonQuery();
+                                    }
+                                    
+                                    MessageBox.Show("Sala creada exitosamente.");
+                                    return idChat;
+                                }
+                                else
+                                {
+                                    MessageBox.Show("No se pudo crear la sala.");
+                                    return -1;
+                                }
+                            }
                         }
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                MessageBox.Show("Error al crear la sala: " + ex.Message);
+                MessageBox.Show("Error al procesar la sala: " + ex.Message);
                 return -1;
             }
         }
