@@ -261,6 +261,13 @@ namespace UniChat
 
         private void BEmoji_Click(object sender, EventArgs e)
         {
+            //Se elimina el texto por defecto al hacer click en el boton de emojis
+            if (RichMessage.Text == "Escribe un mensaje")
+            {
+                RichMessage.Text = "";
+                RichMessage.ForeColor = Color.Gray;
+            }
+
             panelEmoji.Visible = true;
             panelEmoji.BringToFront();
             happy.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -275,8 +282,9 @@ namespace UniChat
             pray.SizeMode = PictureBoxSizeMode.StretchImage;
             ajajaja.SizeMode = PictureBoxSizeMode.StretchImage;
             cool.SizeMode = PictureBoxSizeMode.StretchImage;
+            close.Image = Image.FromFile("salirEmoji.png");
             close.SizeMode = PictureBoxSizeMode.StretchImage;
-
+            
         }
 
             //ShowImageDialog(EmojiImages[":cool:"]);
@@ -575,7 +583,6 @@ namespace UniChat
 
         private void panelEmoji_Paint(object sender, PaintEventArgs e) { }
         private void RichMessage_TextChanged(object sender, EventArgs e) { }
-
         private void kiss_Click(object sender, EventArgs e) { InsertEmojiCode(":kiss:"); }
         private void happy_Click(object sender, EventArgs e) { InsertEmojiCode(":happy:"); }
         private void sad_Click(object sender, EventArgs e) { InsertEmojiCode(":sad:"); }
