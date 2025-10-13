@@ -88,7 +88,7 @@ namespace UniChat
 
             //PA QUE NO SE EQUIVOQUEN 
             //En BEnviarMsj_Click esta lo de enviar mensajes ya para que solo lo guarden en la base
-            //Con panelUser cambian todo lo de los chats (ahi estan en conjunto, todos los botones de ahi) lo pueden conectar con cada dif. chat
+            //Con panelUser cambian todo lo de los chats (ahi están en conjunto, todos los botones de ahi) lo pueden conectar con cada dif. chat
             //Conectar las salas con cada dif chat
 
             //COSAS QUE FALTAN A REGI
@@ -213,43 +213,84 @@ namespace UniChat
 
             if (!string.IsNullOrEmpty(mensaje) && mensaje != "Escribe un mensaje")
             {
-                //modifica por el Unicode
+                // Process emojis first
                 foreach (var entry in EmojiMap)
                 {
-                    // Reemplaza todas las instancias del código de texto por el carácter Unicode
                     RichMessage.Text = RichMessage.Text.Replace(entry.Key, entry.Value);
                 }
-
-                RichMessage.SelectAll();
-                RichMessage.SelectionColor = Color.White;
-                RichMessage.DeselectAll(); // Opcional, para quitar la selección
-
-                // Crear un nuevo RichTextBox (la "burbuja" del mensaje)
+                
+                // Process @mentions - create a highlighted version of the message
+                string processedMessage = RichMessage.Text;
                 RichTextBox nuevoRTB = CrearNuevoRTB(RichMessage, panelUser.Width - 40);
-
+                
+                // Highlight @mentions in the rich text box
+                HighlightMentions(nuevoRTB);
+                
                 panelUser.Controls.Add(nuevoRTB);
 
-                //Posicionamiento
+                // Positioning code...
                 int padding = 30;
                 int y = panelUser.Height - padding;
 
-                // Iteramos en orden inverso sobre todos los RichTextBox que NO son el RichMessage de entrada
                 foreach (Control ctrl in panelUser.Controls.OfType<RichTextBox>().Where(c => c != RichMessage).Reverse())
                 {
                     y -= ctrl.Height + padding;
-                    // Posiciona el mensaje a la derecha (para simular el mensaje del usuario actual)
                     ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, y);
-
-                    // Asegura que el texto sea blanco (aunque ya se hizo en CrearNuevoRTB)
-                    ctrl.ForeColor = Color.White;
+                }
+                
+                // If chat is selected, store the message with mention information
+                if (treeViewChats.SelectedNode?.Tag != null)
+                {
+                    int id_chat = (int)treeViewChats.SelectedNode.Tag;
+                    SaveMessageWithMentions(id_chat, mensaje);
                 }
             }
 
             RichMessage.Text = "";
             RichMessage.ForeColor = Color.Gray;
-
-            // Devolver el foco al RichTextBox si lo deseas
             RichMessage.Focus();
+        }
+
+
+        // Function to highlight @mentions in a RichTextBox
+        private void HighlightMentions(RichTextBox rtb)
+        {
+            string text = rtb.Text;
+            
+            // Find all @username patterns
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"@\w+");
+            foreach (System.Text.RegularExpressions.Match match in regex.Matches(text))
+            {
+                rtb.Select(match.Index, match.Length);
+                rtb.SelectionColor = Color.LightSkyBlue; // Highlight mentions in blue
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Bold);
+            }
+            rtb.DeselectAll();
+        }
+
+        // Function to save message with mentions to database
+        private void SaveMessageWithMentions(int id_chat, string message)
+        {
+            try
+            {
+                using (var connection = DbConfig.GetOpenConnection())
+                {
+                    // 1. Save the message to your messages table
+                    string msgQuery = "INSERT INTO messages (content, sendingDate, id_user, id_chat ) VALUES  (@message, NOW(), @senderId, @id_chat)";
+                    using (var cmd = new MySqlCommand(msgQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
+                        cmd.Parameters.AddWithValue("@senderId", CurrentUser.IdUser);
+                        cmd.Parameters.AddWithValue("@message", message);
+                        cmd.ExecuteNonQuery();
+                       
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Error al guardar el mensaje: " + ex.Message);
+            }
         }
 
 
@@ -280,7 +321,7 @@ namespace UniChat
         {
             //Abrir una tipo panel con emojis para seleccionar
             //\U0001F60A es una carita feliz
-            //Mostrar el panel de emoji cuando se seleccione el botón de emoji
+            //Mostrar el panel de emoji cuando se seleccione el botón
 
             panelEmoji.Visible = true; // Alterna la visibilidad del panel de emojis
 
@@ -386,17 +427,17 @@ namespace UniChat
             {
                 using (var connection = DbConfig.GetOpenConnection())
                 {
-                    string query = "SELECT id_chat, chatname FROM chats WHERE admin = @admin";
+                    string query = "SELECT id_chat, chat_name FROM chats WHERE admin_id = @admin_id";
                     using (var cmd = new MySqlCommand(query, connection))
                     {
-                        cmd.Parameters.AddWithValue("@admin", CurrentUser.IdUser);
+                        cmd.Parameters.AddWithValue("@admin_id", CurrentUser.IdUser);
 
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 int idChat = Convert.ToInt32(reader["id_chat"]);
-                                string nombreChat = reader["chatname"].ToString();
+                                string nombreChat = reader["chat_name"].ToString();
 
                                 TreeNode nodo = new TreeNode(nombreChat);
                                 nodo.Tag = idChat; // Guarda el id en el nodo
@@ -417,7 +458,7 @@ namespace UniChat
             //Implementar
             // -> el elemento que este seleccionado en el treeview
             // -> eliminar de la base de datos
-            // -> validar que el admin del chat solo pueda eliminar el chat
+            // -> validar que el admin_id del chat solo pueda eliminar el chat
 
             if (treeViewChats.SelectedNode != null && treeViewChats.SelectedNode.Tag != null)
             {
@@ -430,11 +471,11 @@ namespace UniChat
                     {
                         using (var connection = DbConfig.GetOpenConnection())
                         {
-                            string query = "DELETE FROM chats WHERE id_chat = @idChat AND admin = @admin";
+                            string query = "DELETE FROM chats WHERE id_chat = @id_chat AND admin_id = @admin_id";
                             using (var cmd = new MySqlCommand(query, connection))
                             {
-                                cmd.Parameters.AddWithValue("@idChat", idChatSeleccionado);
-                                cmd.Parameters.AddWithValue("@admin", CurrentUser.IdUser);
+                                cmd.Parameters.AddWithValue("@id_chat", idChatSeleccionado);
+                                cmd.Parameters.AddWithValue("@admin_id", CurrentUser.IdUser);
                                 int rowsAffected = cmd.ExecuteNonQuery();
                                 if (rowsAffected > 0)
                                 {
@@ -472,58 +513,6 @@ namespace UniChat
         {
 
         }
-
-        /*
-        private void Happy_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string imagePath = "happy.png"; // ruta relativa
-                if (!System.IO.File.Exists(imagePath))
-                {
-                    MessageBox.Show("No se encontró el archivo del emoji: " + imagePath);
-                    return;
-                }
-
-                Image emoji = Image.FromFile(imagePath);
-                InsertImageIntoRichTextBox(RichMessage, emoji);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al insertar emoji: " + ex.Message);
-            }
-
-            panelEmoji.Visible = false; // Oculta el panel después de seleccionar un emoji
-        }
-
-        private void InsertImageIntoRichTextBox(RichTextBox rtb, Image image)
-        {
-            if (image == null || rtb == null) return;
-
-            // 🔹 Ajusta estos valores a gusto
-            int customWidth = 15;  // ancho deseado (puedes probar 25, 30, 50…)
-            int customHeight = 15; // alto deseado (igual al ancho para mantenerlo cuadrado)
-            /*
-            Image resized = new Bitmap(image, new Size(customWidth, customHeight));
-
-            Clipboard.SetImage(resized);
-            rtb.Paste();
-
-            resized.Dispose();
-            
-            using (Image resized = new Bitmap(image, new Size(customWidth, customHeight)))
-            {
-                bool wasReadOnly = rtb.ReadOnly;
-                rtb.ReadOnly = false;  // Permitir edición temporalmente
-                rtb.Focus();           // Asegurar que el control tenga el foco
-
-                Clipboard.SetImage(resized);
-                rtb.Paste();
-
-                rtb.ReadOnly = wasReadOnly;
-            }
-        }
-        */
 
         private void happy_Click(object sender, EventArgs e)
         {

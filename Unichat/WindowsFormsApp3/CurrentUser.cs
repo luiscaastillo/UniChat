@@ -19,13 +19,6 @@ namespace WindowsFormsApp3
             Username = username;
         }
 
-        //Si se implementa CERRAR SESION usar ESTE bloque de codigo
-        /*public static void Clear()
-        {
-            IdUser = null;
-            Username = null;
-        }
-        */
     }
 
 

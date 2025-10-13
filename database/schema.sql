@@ -23,13 +23,13 @@ DROP TABLE IF EXISTS `chat_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chat_members` (
-  `iduser` int DEFAULT NULL,
-  `idchat` int DEFAULT NULL,
-  KEY `fk_chat2_user_idx` (`iduser`),
-  KEY `fk_chat2_chats_idx` (`idchat`),
-  CONSTRAINT `fk_chat2_chats` FOREIGN KEY (`idchat`) REFERENCES `chats` (`id_chat`),
-  CONSTRAINT `fk_chat2_user` FOREIGN KEY (`iduser`) REFERENCES `users` (`id_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id_user` int NOT NULL,
+  `id_chat` int NOT NULL,
+  PRIMARY KEY (`id_user`,`id_chat`),
+  KEY `fk_chat_members_chats_idx` (`id_chat`),
+  CONSTRAINT `fk_chat_members_chats` FOREIGN KEY (`id_chat`) REFERENCES `chats` (`id_chat`) ON DELETE CASCADE,
+  CONSTRAINT `fk_chat_members_user` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,14 +41,12 @@ DROP TABLE IF EXISTS `chats`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chats` (
   `id_chat` int NOT NULL AUTO_INCREMENT,
-  `chatname` varchar(50) NOT NULL,
-  `admin` int NOT NULL,
-  `n_msg` int NOT NULL,
-  `n_members` int DEFAULT NULL,
+  `chat_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `admin_id` int NOT NULL,
   PRIMARY KEY (`id_chat`),
-  KEY `fk_chats_users_idx` (`admin`),
-  CONSTRAINT `fk_chats_users` FOREIGN KEY (`admin`) REFERENCES `users` (`id_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_chats_users_idx` (`admin_id`),
+  CONSTRAINT `fk_chats_users` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -59,17 +57,17 @@ DROP TABLE IF EXISTS `messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `messages` (
-  `id_msg` int NOT NULL,
-  `content` varchar(300) NOT NULL,
-  `sendingDate` datetime NOT NULL,
-  `id_msguser` int NOT NULL,
-  `id_msgchat` int NOT NULL,
+  `id_msg` int NOT NULL AUTO_INCREMENT,
+  `content` text COLLATE utf8mb4_unicode_ci,
+  `sendingDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id_user` int NOT NULL,
+  `id_chat` int NOT NULL,
   PRIMARY KEY (`id_msg`),
-  KEY `fk_msg_chats_idx` (`id_msguser`),
-  KEY `fk_msg_chats_idx1` (`id_msgchat`),
-  CONSTRAINT `fk_msg_chats` FOREIGN KEY (`id_msgchat`) REFERENCES `chats` (`id_chat`),
-  CONSTRAINT `fk_msg_user` FOREIGN KEY (`id_msguser`) REFERENCES `users` (`id_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_msg_user_idx` (`id_user`),
+  KEY `fk_msg_chats_idx` (`id_chat`),
+  CONSTRAINT `fk_msg_chats` FOREIGN KEY (`id_chat`) REFERENCES `chats` (`id_chat`) ON DELETE CASCADE,
+  CONSTRAINT `fk_msg_user` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,11 +79,12 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id_user` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL,
-  `passwd` varchar(45) NOT NULL,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `passwd` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `creationDate` datetime NOT NULL,
-  PRIMARY KEY (`id_user`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id_user`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -97,4 +96,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-01 14:30:43
+-- Dump completed on 2025-10-12 21:02:38
