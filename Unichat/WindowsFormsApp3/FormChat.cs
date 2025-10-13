@@ -52,7 +52,6 @@ namespace UniChat
 
             //Colores de los paneles
             panelUser.BackColor = Color.FromArgb(166, 166, 166);
-            panelUser2.BackColor = Color.FromArgb(166, 166, 166);
             panelSalas.BackColor = Color.FromArgb(166, 166, 166);
             panelName.BackColor = Color.FromArgb(25, 28, 31);
             panelEmoji.BackColor = Color.FromArgb(25, 28, 31);
@@ -224,38 +223,52 @@ namespace UniChat
                 // Procesar emojis
                 foreach (var entry in EmojiMap)
                 {
-                    RichMessage.Text = RichMessage.Text.Replace(entry.Key, entry.Value);
+                    mensaje = mensaje.Replace(entry.Key, entry.Value);
                 }
-
-                // Crear el RichTextBox del mensaje enviado
-                RichTextBox nuevoRTB = CrearNuevoRTB(RichMessage, panelUser.Width - 40);
-                nuevoRTB.Tag = "mensaje"; // Importante para limpieza
-                HighlightMentions(nuevoRTB);
-
-                panelUser.Controls.Add(nuevoRTB);
-
-                // Agregar espacio invisible en panelUser2 para mantener el orden
-                RichTextBox espacio = new RichTextBox
-                {
-                    Height = nuevoRTB.Height,
-                    Width = 1,
-                    Tag = "mensaje",
-                    BackColor = Color.FromArgb(25, 28, 31),
-                    BorderStyle = BorderStyle.None,
-                    ReadOnly = true,
-                    Enabled = false,
-                    Visible = false
-                };
-                panelUser2.Controls.Add(espacio);
-
-                // Reposicionar mensajes en ambos paneles
-                ReposicionarMensajes();
 
                 // Guardar en la base de datos
                 if (treeViewChats.SelectedNode?.Tag != null)
                 {
                     int id_chat = (int)treeViewChats.SelectedNode.Tag;
                     SaveMessageWithMentions(id_chat, mensaje);
+
+                    // Obtener el nombre de usuario y la hora actual
+                    string username = CurrentUser.Username;
+                    DateTime fecha = DateTime.Now;
+
+                    // Crear el RichTextBox del mensaje enviado
+                    RichTextBox rtb = new RichTextBox
+                    {
+                        BackColor = Color.FromArgb(25, 28, 31),
+                        ForeColor = Color.White,
+                        Font = new Font("Century Gothic", 9, FontStyle.Regular),
+                        BorderStyle = BorderStyle.None,
+                        ReadOnly = true,
+                        Multiline = true,
+                        WordWrap = true,
+                        Tag = "mensaje",
+                        Text = $"{username}: {mensaje}\n{fecha:HH:mm}"
+                    };
+                    HighlightMentions(rtb);
+                    rtb.Width = Math.Min(panelUser.Width - 80, rtb.PreferredSize.Width);
+                    rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
+
+                    // Calcular la posición Y para el nuevo mensaje (abajo del último)
+                    int padding = 30;
+                    int y = 10;
+                    foreach (Control ctrl in panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje"))
+                    {
+                        y = Math.Max(y, ctrl.Location.Y + ctrl.Height + padding);
+                    }
+
+                    // Alinear a la derecha (usuario actual)
+                    int x = panelUser.Width - rtb.Width - padding;
+                    rtb.Location = new Point(x, y);
+                    panelUser.Controls.Add(rtb);
+                    rtb.BringToFront();
+
+                    // Hacer scroll al final
+                    panelUser.ScrollControlIntoView(rtb);
                 }
             }
 
@@ -264,17 +277,13 @@ namespace UniChat
             RichMessage.Focus();
         }
 
+
         private void CargarMensajesChat(int id_chat)
         {
-            // Elimina solo los mensajes previos (Tag == "mensaje") de ambos paneles
+            // Elimina solo los mensajes previos (Tag == "mensaje") del panelUser
             foreach (Control ctrl in panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").ToList())
             {
                 panelUser.Controls.Remove(ctrl);
-                ctrl.Dispose();
-            }
-            foreach (Control ctrl in panelUser2.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").ToList())
-            {
-                panelUser2.Controls.Remove(ctrl);
                 ctrl.Dispose();
             }
 
@@ -294,9 +303,8 @@ namespace UniChat
 
                         using (var reader = cmd.ExecuteReader())
                         {
-                            var mensajesUser = new List<Control>();
-                            var mensajesUser2 = new List<Control>();
                             int padding = 30;
+                            int y = 10;
 
                             while (reader.Read())
                             {
@@ -319,51 +327,19 @@ namespace UniChat
                                     Text = $"{username}: {contenido}\n{fecha:HH:mm}"
                                 };
                                 HighlightMentions(rtb);
-                                rtb.Width = Math.Min(panelUser.Width - 40, rtb.PreferredSize.Width);
+                                rtb.Width = Math.Min(panelUser.Width - 80, rtb.PreferredSize.Width);
                                 rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
 
-                                // Espacio invisible
-                                RichTextBox espacio = new RichTextBox
-                                {
-                                    Height = rtb.Height,
-                                    Width = 1,
-                                    Tag = "mensaje",
-                                    BackColor = Color.FromArgb(25, 28, 31),
-                                    BorderStyle = BorderStyle.None,
-                                    ReadOnly = true,
-                                    Enabled = false,
-                                    Visible = false
-                                };
+                                // Posiciona a la derecha si es el usuario actual, a la izquierda si no
+                                int x = (idUser == CurrentUser.IdUser)
+                                    ? panelUser.Width - rtb.Width - padding
+                                    : padding;
 
-                                if (idUser == CurrentUser.IdUser)
-                                {
-                                    mensajesUser.Add(rtb);
-                                    mensajesUser2.Add(espacio);
-                                }
-                                else
-                                {
-                                    mensajesUser2.Add(rtb);
-                                    mensajesUser.Add(espacio);
-                                }
-                            }
+                                rtb.Location = new Point(x, y);
+                                panelUser.Controls.Add(rtb);
+                                rtb.BringToFront();
 
-                            // Posiciona los mensajes desde abajo hacia arriba en cada panel
-                            int yUser = panelUser.Height - padding;
-                            int yUser2 = panelUser2.Height - padding;
-
-                            foreach (var ctrl in mensajesUser.AsEnumerable().Reverse())
-                            {
-                                yUser -= ctrl.Height + padding;
-                                ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, yUser);
-                                panelUser.Controls.Add(ctrl);
-                                ctrl.BringToFront();
-                            }
-                            foreach (var ctrl in mensajesUser2.AsEnumerable().Reverse())
-                            {
-                                yUser2 -= ctrl.Height + padding;
-                                ctrl.Location = new Point(padding, yUser2);
-                                panelUser2.Controls.Add(ctrl);
-                                ctrl.BringToFront();
+                                y += rtb.Height + padding;
                             }
                         }
                     }
@@ -375,27 +351,6 @@ namespace UniChat
             }
         }
 
-        // Reposiciona los mensajes en ambos paneles (llamar después de agregar mensajes manuales)
-        private void ReposicionarMensajes()
-        {
-            int padding = 30;
-            int yUser = panelUser.Height - padding;
-            int yUser2 = panelUser2.Height - padding;
-
-            var mensajesUser = panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").Reverse();
-            var mensajesUser2 = panelUser2.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").Reverse();
-
-            foreach (var ctrl in mensajesUser)
-            {
-                yUser -= ctrl.Height + padding;
-                ctrl.Location = new Point(panelUser.Width - ctrl.Width - padding, yUser);
-            }
-            foreach (var ctrl in mensajesUser2)
-            {
-                yUser2 -= ctrl.Height + padding;
-                ctrl.Location = new Point(padding, yUser2);
-            }
-        }
 
 
 
