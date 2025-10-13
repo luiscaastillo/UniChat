@@ -17,7 +17,6 @@ using WindowsFormsApp3;
 
 namespace Unichat
 {
-
     public partial class Form1 : Form
     {
         public Form1()
@@ -98,30 +97,13 @@ namespace Unichat
             path.AddArc(rect.X, rect.Bottom - radio, radio, radio, 90, 90);
             path.CloseAllFigures();
             BBconectar.Region = new Region(path);
-
-
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-        
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
+        private void label1_Click(object sender, EventArgs e) { }
+        private void label3_Click(object sender, EventArgs e) { }
+        private void label4_Click(object sender, EventArgs e) { }
+        private void panel1_Paint(object sender, PaintEventArgs e) { }
+        private void textBoxUsuario_TextChanged(object sender, EventArgs e) { }
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             FormRegister registroForm = new FormRegister(this);
@@ -130,13 +112,6 @@ namespace Unichat
             //Oculta Form1 cuando se abre el FormRegister
             this.Hide();
         }
-
-        private void textBoxUsuario_TextChanged(object sender, EventArgs e)
-        {
-         
-        }
-
-
         private void textBoxUsuario_Enter(object sender, EventArgs e)
         {
             if (textBoxUsuario.Text == "Ingrese nombre de usuario")
@@ -145,7 +120,6 @@ namespace Unichat
                 textBoxUsuario.ForeColor = Color.Black;
             }
         }
-
         private void textBoxUsuario_Leave(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxUsuario.Text))
@@ -189,13 +163,7 @@ namespace Unichat
                 BBconectar_Click(sender, EventArgs.Empty);
             }
         }
-
-
-        private void textBoxContra_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
+        private void textBoxContra_TextChanged(object sender, EventArgs e){}
         private void Bconectar_Click_1(object sender, EventArgs e)
         {
             try
@@ -252,7 +220,6 @@ namespace Unichat
                 MessageBox.Show("Error al registrar el usuario: " + ex.Message);
             }
         }
-
         private void BBconectar_Click(object sender, EventArgs e)
         {
             Bconectar_Click_1(sender,e);

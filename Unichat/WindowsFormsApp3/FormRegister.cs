@@ -85,27 +85,17 @@ namespace UniChat
                 textBoxContra.Text = "";
                 textBoxContra.ForeColor = Color.Black;
             }
-
-            // Si se presiona Enter, ejecuta el registro
             if (e.KeyChar == (char)Keys.Enter)
             {
-                e.Handled = true; // Evita el beep y el salto de línea
+                e.Handled = true;
                 Bconectar_Click_1(sender, EventArgs.Empty);
             }
         }
         private void textBoxRecontra_KeyPress(object sender, KeyPressEventArgs e)
         {
-            /*
-            if (textBoxContra.Text == "Ingrese su contraseña")
-            {
-                textBoxContra.Text = "";
-                textBoxContra.ForeColor = Color.Black;
-            }
-            */
-            // Si se presiona Enter, ejecuta el registro
             if (e.KeyChar == (char)Keys.Enter)
             {
-                e.Handled = true; // Evita el beep y el salto de línea
+                e.Handled = true;
                 Bconectar_Click_1(sender, EventArgs.Empty);
             }
         }
@@ -162,27 +152,12 @@ namespace UniChat
                 textBoxRecontra.ForeColor = Color.Gray;
             }
         }
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             //Abrir Form1 (Login) otra vez, la que ya existe y no crear una nueva
             _form1.Show();
 
             this.Hide();
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBoxContra_TextChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void Bconectar_Click_1(object sender, EventArgs e)
@@ -263,14 +238,10 @@ namespace UniChat
             }
         }
 
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-        }
+        private void label4_Click(object sender, EventArgs e) { }
+        private void label2_Click(object sender, EventArgs e) { }
+        private void textBoxContra_TextChanged(object sender, EventArgs e) { }
+        private void label1_Click(object sender, EventArgs e) { }
+        private void panel1_Paint(object sender, PaintEventArgs e) { }
     }
 }
