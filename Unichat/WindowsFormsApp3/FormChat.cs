@@ -1,21 +1,26 @@
 ﻿using MySql.Data.MySqlClient;
 using Mysqlx.Crud;
+using MySqlX.XDevAPI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Unichat;
 using WindowsFormsApp3;
 
+
 namespace UniChat
 {
     public partial class FormChat : Form
     {
+
         // 🌟 MAPEO DE EMOJIS (códigos de texto a Unicode)
         private readonly Dictionary<string, string> EmojiMap = new Dictionary<string, string>
         {
@@ -34,12 +39,34 @@ namespace UniChat
         };
 
         private readonly Dictionary<string, Image> EmojiImages = new Dictionary<string, Image>();
-
         // Asignar imágenes a EmojiImages solo una vez
 
-        public FormChat()
+
+        private TcpClient client;
+        private StreamReader reader;
+        private StreamWriter writer;
+        private bool isConnected = false;
+
+        public FormChat(TcpClient tcpClient = null, StreamReader streamReader = null, StreamWriter streamWriter = null)
         {
             InitializeComponent();
+
+            if (tcpClient != null && streamReader != null && streamWriter != null)
+            {
+                client = tcpClient;
+                reader = streamReader;
+                writer = streamWriter;
+                isConnected = true;
+
+                // Start listening for messages
+                _ = Task.Run(() => ReceiveMessages());
+            }
+                        else
+            {
+                // Auto-connect to server (configure your server IP and port)
+                _ = ConnectToServer("127.0.0.1", 9000);
+            }
+
             string user = CurrentUser.Username;
             MessageBox.Show("Usuario actual: " + user);
 
@@ -49,17 +76,18 @@ namespace UniChat
             this.BackColor = Color.FromArgb(25, 28, 31);
 
             //Colores de los labels
-            labelUsername.ForeColor = Color.White;
-            labelSalas.ForeColor = Color.White;
+            labelUsername.ForeColor = labelSalas.ForeColor = Color.White;
 
             //Colores de los paneles
-            panelUser.BackColor = Color.FromArgb(166, 166, 166);
-            panelSalas.BackColor = Color.FromArgb(166, 166, 166);
-            panelName.BackColor = Color.FromArgb(25, 28, 31);
-            panelEmoji.BackColor = Color.FromArgb(25, 28, 31);
-            panelSalasName.BackColor = Color.FromArgb(25, 28, 31);
-            treeViewChats.BackColor = Color.FromArgb(25, 28, 31);
-            treeViewUsers.BackColor = Color.FromArgb(25, 28, 31);
+            Color BackColor = Color.FromArgb(166, 166, 166);
+
+            panelUser.BackColor = BackColor;
+            panelSalas.BackColor = BackColor;
+            panelName.BackColor = BackColor;
+            panelEmoji.BackColor = BackColor;
+            panelSalasName.BackColor = BackColor;
+            treeViewChats.BackColor = BackColor;
+            treeViewUsers.BackColor = BackColor;
 
             //Botones e iconos 
             pictureUser.Image = Image.FromFile("user.png");
@@ -115,7 +143,76 @@ namespace UniChat
 
 
 
+            this.FormClosing += FormChat_FormClosing;
             this.FormClosed += (s, e) => Application.Exit();
+        }
+
+        private async void ReceiveMessages()
+        {
+            try
+            {
+                while (isConnected && reader != null)
+                {
+                    string message = await reader.ReadLineAsync();
+                    
+                    if (string.IsNullOrEmpty(message))
+                    {
+                        // Connection closed
+                        isConnected = false;
+                        break;
+                    }
+
+                    // Parse message format: MSG|id_chat|username|content
+                    string[] parts = message.Split(new[] { '|' }, 4); // Limitar a 4 partes
+                    
+                    if (parts.Length >= 4 && parts[0] == "MSG")
+                    {
+                        int id_chat = int.Parse(parts[1]);
+                        string username = parts[2];
+                        string content = parts[3]; // Contenido completo del mensaje
+                        
+                        // Only display if it's not from current user
+                        if (username != CurrentUser.Username)
+                        {
+                            // Guardar el mensaje en la base de datos
+                            SaveReceivedMessage(id_chat, username, content);
+                            
+                            // Check if this message is for the currently selected chat
+                            bool isCurrentChat = false;
+                            if (treeViewChats.InvokeRequired)
+                            {
+                                treeViewChats.Invoke(new Action(() =>
+                                {
+                                    isCurrentChat = treeViewChats.SelectedNode?.Tag != null && 
+                                                  (int)treeViewChats.SelectedNode.Tag == id_chat;
+                                }));
+                            }
+                            else
+                            {
+                                isCurrentChat = treeViewChats.SelectedNode?.Tag != null && 
+                                              (int)treeViewChats.SelectedNode.Tag == id_chat;
+                            }
+
+                            // Solo mostrar si es el chat actualmente seleccionado
+                            if (isCurrentChat)
+                            {
+                                DisplayMessage(username, content, DateTime.Now, false);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (isConnected)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        MessageBox.Show("Error al recibir mensajes: " + ex.Message);
+                    }));
+                    isConnected = false;
+                }
+            }
         }
 
         private void FormChat_Load(object sender, EventArgs e)
@@ -160,13 +257,12 @@ namespace UniChat
                 RichMessage.ForeColor = Color.Gray;
             }
         }
-
         private void label2_Click(object sender, EventArgs e) { }
         private void panel2_Paint(object sender, PaintEventArgs e) { }
         private void panelUser_Paint(object sender, PaintEventArgs e) { }
         private void pictureUser_Click(object sender, EventArgs e) { }
 
-        private void BEnviarMsj_Click(object sender, EventArgs e)
+        private async void BEnviarMsj_Click(object sender, EventArgs e)
         {
             string mensaje = RichMessage.Text.Trim();
 
@@ -175,50 +271,30 @@ namespace UniChat
                 if (treeViewChats.SelectedNode?.Tag != null)
                 {
                     int id_chat = (int)treeViewChats.SelectedNode.Tag;
+                    
+                    // 1. Guardar en base de datos PRIMERO
                     SaveMessageWithMentions(id_chat, mensaje);
 
+                    // 2. Mostrar localmente
                     string username = CurrentUser.Username;
                     DateTime fecha = DateTime.Now;
-
-                    // Mensaje propio: azul Discord
-                    RichTextBox rtb = new RichTextBox
+                    DisplayMessage(username, mensaje, fecha, true);
+                    
+                    // 3. Enviar por socket DESPUÉS (si está conectado)
+                    if (isConnected && writer != null)
                     {
-                        BackColor = Color.FromArgb(88, 101, 242), // Azul Discord
-                        ForeColor = Color.WhiteSmoke,
-                        Font = new Font("Segoe UI", 11, FontStyle.Regular),
-                        BorderStyle = BorderStyle.None,
-                        ReadOnly = true,
-                        Multiline = true,
-                        WordWrap = true,
-                        Tag = "mensaje",
-                        Padding = new Padding(12, 8, 12, 8),
-                        Margin = new Padding(0, 0, 0, 12)
-                    };
-                    rtb.AppendText($"{username}: ");
-                    RenderMessageWithEmojis(rtb, mensaje);
-                    rtb.AppendText($"\n{fecha:HH:mm}");
-                    HighlightMentions(rtb);
-                    rtb.Width = Math.Min(panelUser.Width - 80, rtb.PreferredSize.Width);
-                    rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
-
-                    // Bordes redondeados (opcional)
-                    rtb.Region = System.Drawing.Region.FromHrgn(
-                        NativeMethods.CreateRoundRectRgn(0, 0, rtb.Width, rtb.Height, 16, 16));
-
-                    int padding = 30;
-                    int y = 10;
-                    foreach (Control ctrl in panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje"))
-                    {
-                        y = Math.Max(y, ctrl.Location.Y + ctrl.Height + padding);
+                        try
+                        {
+                            string messagePacket = $"MSG|{id_chat}|{CurrentUser.Username}|{mensaje}";
+                            await writer.WriteLineAsync(messagePacket);
+                            await writer.FlushAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error al enviar mensaje por socket: " + ex.Message);
+                            isConnected = false;
+                        }
                     }
-
-                    // Alinear a la derecha (usuario actual)
-                    int x = panelUser.Width - rtb.Width - padding;
-                    rtb.Location = new Point(x, y);
-                    panelUser.Controls.Add(rtb);
-                    rtb.BringToFront();
-
-                    panelUser.ScrollControlIntoView(rtb);
                 }
             }
 
@@ -434,20 +510,17 @@ namespace UniChat
                 using (var connection = DbConfig.GetOpenConnection())
                 {
                     string query = @"
-                SELECT m.content, m.sendingDate, m.id_user, u.username
-                FROM messages m
-                INNER JOIN users u ON m.id_user = u.id_user
-                WHERE m.id_chat = @id_chat
-                ORDER BY m.sendingDate ASC";
+                                    SELECT m.content, m.sendingDate, m.id_user, u.username
+                                    FROM messages m
+                                    INNER JOIN users u ON m.id_user = u.id_user
+                                    WHERE m.id_chat = @id_chat
+                                    ORDER BY m.sendingDate ASC";
                     using (var cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@id_chat", id_chat);
 
                         using (var reader = cmd.ExecuteReader())
                         {
-                            int padding = 30;
-                            int y = 10;
-
                             while (reader.Read())
                             {
                                 string contenido = reader["content"].ToString();
@@ -457,39 +530,7 @@ namespace UniChat
 
                                 bool esPropio = (idUser == CurrentUser.IdUser);
 
-                                RichTextBox rtb = new RichTextBox
-                                {
-                                    BackColor = esPropio ? Color.FromArgb(88, 101, 242) : Color.FromArgb(64, 68, 75),
-                                    ForeColor = Color.WhiteSmoke,
-                                    Font = new Font("Segoe UI", 11, FontStyle.Regular),
-                                    BorderStyle = BorderStyle.None,
-                                    ReadOnly = true,
-                                    Multiline = true,
-                                    WordWrap = true,
-                                    Tag = "mensaje",
-                                    Padding = new Padding(12, 8, 12, 8),
-                                    Margin = new Padding(0, 0, 0, 12)
-                                };
-                                rtb.AppendText($"{username}: ");
-                                RenderMessageWithEmojis(rtb, contenido);
-                                rtb.AppendText($"\n{fecha:HH:mm}");
-                                HighlightMentions(rtb);
-                                rtb.Width = Math.Min(panelUser.Width - 80, rtb.PreferredSize.Width);
-                                rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
-
-                                // Bordes redondeados (opcional)
-                                rtb.Region = System.Drawing.Region.FromHrgn(
-                                    NativeMethods.CreateRoundRectRgn(0, 0, rtb.Width, rtb.Height, 16, 16));
-
-                                int x = esPropio
-                                    ? panelUser.Width - rtb.Width - padding
-                                    : padding;
-
-                                rtb.Location = new Point(x, y);
-                                panelUser.Controls.Add(rtb);
-                                rtb.BringToFront();
-
-                                y += rtb.Height + padding;
+                                DisplayMessage(username, contenido, fecha, esPropio);
                             }
                         }
                     }
@@ -498,6 +539,66 @@ namespace UniChat
             catch (MySqlException ex)
             {
                 MessageBox.Show("Error al cargar los mensajes: " + ex.Message);
+            }
+        }
+
+        private void DisplayMessage(string username, string mensaje, DateTime fecha, bool esPropio)
+        {
+            Action displayAction = () =>
+            {
+                RichTextBox rtb = new RichTextBox
+                {
+                    BackColor = esPropio ? Color.FromArgb(88, 101, 242) : Color.FromArgb(64, 68, 75),
+                    ForeColor = Color.WhiteSmoke,
+                    Font = new Font("Segoe UI", 11, FontStyle.Regular),
+                    BorderStyle = BorderStyle.None,
+                    ReadOnly = true,
+                    Multiline = true,
+                    WordWrap = true,
+                    Tag = "mensaje",
+                    Padding = new Padding(12, 8, 12, 8),
+                    Margin = new Padding(0, 0, 0, 12)
+                };
+                
+                rtb.AppendText($"{username}: ");
+                RenderMessageWithEmojis(rtb, mensaje);
+                rtb.AppendText($"\n{fecha:HH:mm}");
+                HighlightMentions(rtb);
+                rtb.Width = Math.Min(panelUser.Width - 80, rtb.PreferredSize.Width);
+                rtb.Height = rtb.GetPositionFromCharIndex(rtb.TextLength).Y + 20;
+
+                rtb.Region = System.Drawing.Region.FromHrgn(
+                    NativeMethods.CreateRoundRectRgn(0, 0, rtb.Width, rtb.Height, 16, 16));
+
+                int padding = 30;
+                int y = 10;
+                foreach (Control ctrl in panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje"))
+                {
+                    y = Math.Max(y, ctrl.Location.Y + ctrl.Height + padding);
+                }
+
+                int x = esPropio ? panelUser.Width - rtb.Width - padding : padding;
+                rtb.Location = new Point(x, y);
+                
+                panelUser.Controls.Add(rtb);
+                rtb.BringToFront();
+                panelUser.ScrollControlIntoView(rtb);
+            };
+
+            if (panelUser.InvokeRequired)
+            {
+                try
+                {
+                    panelUser.Invoke(displayAction);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // El formulario se cerró, ignorar
+                }
+            }
+            else
+            {
+                displayAction();
             }
         }
 
@@ -688,19 +789,133 @@ namespace UniChat
             }
         }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
+        private void groupBox1_Enter(object sender, EventArgs e){ }
 
+        private void panel1_Paint(object sender, PaintEventArgs e){ }
+
+        private void panelSalasName_Paint(object sender, PaintEventArgs e){ }
+
+        public async Task<bool> ConnectToServer(string serverIP, int port)
+        {
+            try
+            {
+                client = new TcpClient();
+                await client.ConnectAsync(serverIP, port);
+                
+                NetworkStream stream = client.GetStream();
+                reader = new StreamReader(stream, Encoding.UTF8);
+                writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+                
+                isConnected = true;
+                
+                // Send authentication
+                await writer.WriteLineAsync($"AUTH|{CurrentUser.Username}|{CurrentUser.IdUser}");
+                
+                // Start receiving messages
+                _ = Task.Run(() => ReceiveMessages());
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al conectar con el servidor: " + ex.Message);
+                return false;
+            }
         }
 
-        private void panel1_Paint(object sender, PaintEventArgs e)
+        private async void DisconnectFromServer()
         {
-
+            if (!isConnected) return;
+            
+            isConnected = false;
+            
+            if (writer != null)
+            {
+                try
+                {
+                    await writer.WriteLineAsync("DISCONNECT");
+                    await writer.FlushAsync();
+                    writer.Dispose();
+                }
+                catch { }
+                writer = null;
+            }
+            
+            if (reader != null)
+            {
+                reader.Dispose();
+                reader = null;
+            }
+            
+            if (client != null)
+            {
+                client.Close();
+                client = null;
+            }
         }
 
-        private void panelSalasName_Paint(object sender, PaintEventArgs e)
-        {
+        private void FormChat_FormClosing(object sender, FormClosingEventArgs e) { DisconnectFromServer(); }
 
+        private void SaveReceivedMessage(int id_chat, string username, string content)
+        {
+            try
+            {
+                using (var connection = DbConfig.GetOpenConnection())
+                {
+                    // Obtener el id_user del remitente por su username
+                    string getUserQuery = "SELECT id_user FROM users WHERE username = @username";
+                    int senderId = 0;
+                    
+                    using (var cmdUser = new MySqlCommand(getUserQuery, connection))
+                    {
+                        cmdUser.Parameters.AddWithValue("@username", username);
+                        var result = cmdUser.ExecuteScalar();
+                        if (result != null)
+                        {
+                            senderId = Convert.ToInt32(result);
+                        }
+                    }
+
+                    if (senderId > 0)
+                    {
+                        // Verificar si el mensaje ya existe (evitar duplicados)
+                        string checkQuery = @"SELECT COUNT(*) FROM messages 
+                                             WHERE id_chat = @id_chat 
+                                             AND id_user = @senderId 
+                                             AND content = @content 
+                                             AND sendingDate >= DATE_SUB(NOW(), INTERVAL 5 SECOND)";
+                        
+                        using (var cmdCheck = new MySqlCommand(checkQuery, connection))
+                        {
+                            cmdCheck.Parameters.AddWithValue("@id_chat", id_chat);
+                            cmdCheck.Parameters.AddWithValue("@senderId", senderId);
+                            cmdCheck.Parameters.AddWithValue("@content", content);
+                            
+                            int count = Convert.ToInt32(cmdCheck.ExecuteScalar());
+                            
+                            if (count == 0)
+                            {
+                                // Insertar el mensaje
+                                string insertQuery = @"INSERT INTO messages (content, sendingDate, id_user, id_chat) 
+                                                      VALUES (@content, NOW(), @senderId, @id_chat)";
+                                
+                                using (var cmdInsert = new MySqlCommand(insertQuery, connection))
+                                {
+                                    cmdInsert.Parameters.AddWithValue("@id_chat", id_chat);
+                                    cmdInsert.Parameters.AddWithValue("@senderId", senderId);
+                                    cmdInsert.Parameters.AddWithValue("@content", content);
+                                    cmdInsert.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                // Log error pero no mostrar MessageBox en thread secundario
+                System.Diagnostics.Debug.WriteLine("Error al guardar mensaje recibido: " + ex.Message);
+            }
         }
     }
 }
@@ -708,6 +923,5 @@ namespace UniChat
 internal static class NativeMethods
 {
     [System.Runtime.InteropServices.DllImport("gdi32.dll")]
-    public static extern IntPtr CreateRoundRectRgn(
-        int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
+    public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 }

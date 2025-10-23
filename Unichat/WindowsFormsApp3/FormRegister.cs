@@ -222,7 +222,7 @@ namespace UniChat
 
                         int result = cmdInsert.ExecuteNonQuery();
                         
-                        if (result > 0) //eso q luis
+                        if (result > 0) 
                         {
                             MessageBox.Show("Usuario registrado exitosamente.");
                             FormLogIn Form2 = new FormLogIn();

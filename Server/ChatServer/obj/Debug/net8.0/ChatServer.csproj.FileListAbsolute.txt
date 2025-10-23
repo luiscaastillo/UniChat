@@ -1,0 +1,15 @@
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\bin\Debug\net8.0\ChatServer.exe
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\bin\Debug\net8.0\ChatServer.deps.json
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\bin\Debug\net8.0\ChatServer.runtimeconfig.json
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\bin\Debug\net8.0\ChatServer.dll
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\bin\Debug\net8.0\ChatServer.pdb
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.AssemblyInfoInputs.cache
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.AssemblyInfo.cs
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.csproj.CoreCompileInputs.cache
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.sourcelink.json
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.dll
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\refint\ChatServer.dll
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.pdb
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ChatServer.genruntimeconfig.cache
+C:\Mac\Home\Documents\Code\ITG\proyecto_UniChat\Server\ChatServer\obj\Debug\net8.0\ref\ChatServer.dll
