@@ -36,9 +36,14 @@ namespace UniChat
         private void InitializeComponent()
         {
             this.SuspendLayout();
+            // 
+            // FormAnadirUsuario
+            // 
             this.ClientSize = new System.Drawing.Size(400, 450);
             this.Name = "FormAnadirUsuario";
+            this.ShowIcon = false;
             this.ResumeLayout(false);
+
         }
 
         private void ConfigureFormUI()

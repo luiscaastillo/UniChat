@@ -31,10 +31,16 @@ namespace UniChat
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormEliminarUsuario));
             this.SuspendLayout();
+            // 
+            // FormEliminarUsuario
+            // 
             this.ClientSize = new System.Drawing.Size(400, 450);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormEliminarUsuario";
             this.ResumeLayout(false);
+
         }
 
         private void ConfigureFormUI()

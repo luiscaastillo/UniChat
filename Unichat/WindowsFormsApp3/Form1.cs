@@ -17,9 +17,9 @@ using WindowsFormsApp3;
 
 namespace Unichat
 {
-    public partial class Form1 : Form
+    public partial class FormLogIn : Form
     {
-        public Form1()
+        public FormLogIn()
         {
             InitializeComponent();
 
@@ -223,6 +223,11 @@ namespace Unichat
         private void BBconectar_Click(object sender, EventArgs e)
         {
             Bconectar_Click_1(sender,e);
+        }
+
+        private void labelUsuario_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
