@@ -17,8 +17,8 @@ namespace UniChat
 {
     public partial class FormRegister : Form
     {
-        private Form1 _form1; // Variable para almacenar la referencia a Form1
-        public FormRegister(Form1 form1)
+        private FormLogIn _form1; // Variable para almacenar la referencia a Form1
+        public FormRegister(FormLogIn form1)
         {
             InitializeComponent();
 
@@ -222,10 +222,10 @@ namespace UniChat
 
                         int result = cmdInsert.ExecuteNonQuery();
                         
-                        if (result > 0) //eso q luis
+                        if (result > 0) 
                         {
                             MessageBox.Show("Usuario registrado exitosamente.");
-                            Form1 Form2 = new Form1();
+                            FormLogIn Form2 = new FormLogIn();
                             Form2.Show();
                             this.Hide();
                         }

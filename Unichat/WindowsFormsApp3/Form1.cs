@@ -1,25 +1,35 @@
-﻿using MySql.Data.MySqlClient; //Conexion con la Base de datos
+﻿using BCrypt.Net;
+using MySql.Data.MySqlClient;
 using Mysqlx.Crud;
+using MySqlX.XDevAPI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using UniChat;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using BCrypt.Net;
 using WindowsFormsApp3;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Unichat
 {
-    public partial class Form1 : Form
+    public partial class FormLogIn : Form
     {
-        public Form1()
+
+        private TcpClient client;
+        private StreamReader reader;
+        private StreamWriter writer;
+        private string usernameTCP;
+
+        public FormLogIn()
         {
             InitializeComponent();
 
@@ -51,7 +61,7 @@ namespace Unichat
             //Config de los textBox Usuario y Contra
             textBoxUsuario.Font = new Font("Century Gothic", 9, FontStyle.Regular);
             textBoxContra.Font = new Font("Century Gothic", 9, FontStyle.Regular);
-            textBoxContra.PasswordChar = '●'; 
+            textBoxContra.PasswordChar = '●';
 
             //Imagen  BConectar
             Bconectar.Image = Image.FromFile("iniciar.png");
@@ -163,7 +173,7 @@ namespace Unichat
                 BBconectar_Click(sender, EventArgs.Empty);
             }
         }
-        private void textBoxContra_TextChanged(object sender, EventArgs e){}
+        private void textBoxContra_TextChanged(object sender, EventArgs e) { }
         private void Bconectar_Click_1(object sender, EventArgs e)
         {
             try
@@ -171,6 +181,7 @@ namespace Unichat
                 using (MySqlConnection connection = DbConfig.GetOpenConnection())
                 {
                     string username = textBoxUsuario.Text;
+                    usernameTCP = username;
                     string password = textBoxContra.Text;
 
                     string query = "SELECT id_user, passwd FROM users WHERE username = @username";
@@ -194,6 +205,8 @@ namespace Unichat
                                 {
                                     // Guarda el usuario actual (Static Class)
                                     CurrentUser.SetCurrentUser(idObtenido, username);
+
+                                    ConnectToServer();
 
                                     MessageBox.Show("LogIn Exitoso");
                                     FormChat chatForm = new FormChat();
@@ -220,9 +233,69 @@ namespace Unichat
                 MessageBox.Show("Error al registrar el usuario: " + ex.Message);
             }
         }
-        private void BBconectar_Click(object sender, EventArgs e)
+        private void BBconectar_Click(object sender, EventArgs e) { Bconectar_Click_1(sender, e); }
+
+        private void labelUsuario_Click(object sender, EventArgs e){ }
+
+       
+        private async void ConnectToServer()
         {
-            Bconectar_Click_1(sender,e);
+            try
+            {
+                client = new TcpClient();
+
+                // Reemplaza "127.0.0.1" con la IP del servidor si está en otra máquina
+                await client.ConnectAsync("127.0.0.1", 9000);
+
+                NetworkStream stream = client.GetStream();
+                reader = new StreamReader(stream);
+                writer = new StreamWriter(stream) { AutoFlush = true };
+
+                // Envía el nombre de usuario al servidor para identificar la conexión
+                await writer.WriteLineAsync($"{usernameTCP} joined");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("No se pudo conectar al servidor: " + ex.Message);
+            }
         }
+
+        // Tarea en segundo plano para escuchar
+        private async Task ReceiveMessages()
+        {
+            try
+            {
+                while (true)
+                {
+                    string message = await reader.ReadLineAsync();
+                    if (message == null) break;
+
+                    // ¡IMPORTANTE! No puedes actualizar la UI desde un hilo
+                    // que no sea el principal. Usa Invoke.
+                    UpdateChat(message);
+                }
+            }
+            catch (Exception)
+            {
+                UpdateChat("Se perdió la conexión con el servidor.");
+            }
+        }
+        
+        private void UpdateChat(string message)
+        {
+            /*
+            if (txtChat.InvokeRequired)
+            {
+                // Si estamos en un hilo diferente, invocamos al hilo principal
+                txtChat.Invoke(new Action<string>(UpdateChat), message);
+            }
+            else
+            {
+                // Si ya estamos en el hilo principal, actualizamos directamente
+                txtChat.AppendText(message + Environment.NewLine);
+            }
+            */
+        }
+        
     }
 }

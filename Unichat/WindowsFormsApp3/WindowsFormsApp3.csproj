@@ -139,8 +139,14 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FormAnadirUsuario.resx">
+      <DependentUpon>FormAnadirUsuario.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormChat.resx">
       <DependentUpon>FormChat.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormEliminarUsuario.resx">
+      <DependentUpon>FormEliminarUsuario.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormNuevaSala.resx">
       <DependentUpon>FormNuevaSala.cs</DependentUpon>
@@ -156,6 +162,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -170,6 +177,90 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\add.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\back2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\background_chat.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\background_login.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\crear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_angry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_cool.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_corazon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_cry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_eww.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_happy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_kiss.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_like.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_lover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_pray.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_risa.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\emoji_sad.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\group.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_chat.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\login.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logout.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\registrar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\salirEmoji.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\send.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\user.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\user2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

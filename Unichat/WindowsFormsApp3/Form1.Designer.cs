@@ -1,6 +1,6 @@
 ﻿namespace Unichat
 {
-    partial class Form1
+    partial class FormLogIn
     {
         /// <summary>
         /// Variable del diseñador necesaria.
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormLogIn));
             this.label1 = new System.Windows.Forms.Label();
             this.labelUsuario = new System.Windows.Forms.Label();
             this.labelContra = new System.Windows.Forms.Label();
@@ -50,10 +51,10 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.label1.Location = new System.Drawing.Point(34, 28);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(51, 44);
+            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(388, 39);
+            this.label1.Size = new System.Drawing.Size(602, 63);
             this.label1.TabIndex = 2;
             this.label1.Text = "¡Bienvenido a UniChat!";
             this.label1.Click += new System.EventHandler(this.label1_Click);
@@ -65,12 +66,13 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelUsuario.AutoSize = true;
             this.labelUsuario.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelUsuario.Location = new System.Drawing.Point(69, 130);
-            this.labelUsuario.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelUsuario.Location = new System.Drawing.Point(163, 219);
+            this.labelUsuario.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.labelUsuario.Name = "labelUsuario";
-            this.labelUsuario.Size = new System.Drawing.Size(115, 31);
+            this.labelUsuario.Size = new System.Drawing.Size(171, 48);
             this.labelUsuario.TabIndex = 3;
             this.labelUsuario.Text = "Usuario";
+            this.labelUsuario.Click += new System.EventHandler(this.labelUsuario_Click);
             // 
             // labelContra
             // 
@@ -79,10 +81,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelContra.AutoSize = true;
             this.labelContra.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelContra.Location = new System.Drawing.Point(69, 227);
-            this.labelContra.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelContra.Location = new System.Drawing.Point(163, 367);
+            this.labelContra.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.labelContra.Name = "labelContra";
-            this.labelContra.Size = new System.Drawing.Size(165, 31);
+            this.labelContra.Size = new System.Drawing.Size(245, 48);
             this.labelContra.TabIndex = 5;
             this.labelContra.Text = "Contraseña";
             this.labelContra.Click += new System.EventHandler(this.label3_Click);
@@ -92,10 +94,10 @@
             this.labelCuenta.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCuenta.AutoSize = true;
             this.labelCuenta.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCuenta.Location = new System.Drawing.Point(143, 451);
-            this.labelCuenta.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelCuenta.Location = new System.Drawing.Point(214, 705);
+            this.labelCuenta.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.labelCuenta.Name = "labelCuenta";
-            this.labelCuenta.Size = new System.Drawing.Size(183, 17);
+            this.labelCuenta.Size = new System.Drawing.Size(267, 26);
             this.labelCuenta.TabIndex = 7;
             this.labelCuenta.Text = "¿Necesitas una cuenta?";
             this.labelCuenta.Click += new System.EventHandler(this.label4_Click);
@@ -106,10 +108,10 @@
             this.linkRegistrarse.AutoSize = true;
             this.linkRegistrarse.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.linkRegistrarse.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(197)))), ((int)(((byte)(255)))));
-            this.linkRegistrarse.Location = new System.Drawing.Point(332, 451);
-            this.linkRegistrarse.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.linkRegistrarse.Location = new System.Drawing.Point(498, 705);
+            this.linkRegistrarse.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.linkRegistrarse.Name = "linkRegistrarse";
-            this.linkRegistrarse.Size = new System.Drawing.Size(95, 18);
+            this.linkRegistrarse.Size = new System.Drawing.Size(148, 29);
             this.linkRegistrarse.TabIndex = 8;
             this.linkRegistrarse.TabStop = true;
             this.linkRegistrarse.Text = "Registrarse";
@@ -129,22 +131,22 @@
             this.panel1.Controls.Add(this.linkRegistrarse);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.labelCuenta);
-            this.panel1.Location = new System.Drawing.Point(107, 27);
-            this.panel1.Margin = new System.Windows.Forms.Padding(10);
+            this.panel1.Location = new System.Drawing.Point(160, 42);
+            this.panel1.Margin = new System.Windows.Forms.Padding(15, 16, 15, 16);
             this.panel1.Name = "panel1";
-            this.panel1.Padding = new System.Windows.Forms.Padding(10);
-            this.panel1.Size = new System.Drawing.Size(567, 555);
+            this.panel1.Padding = new System.Windows.Forms.Padding(15, 16, 15, 16);
+            this.panel1.Size = new System.Drawing.Size(850, 867);
             this.panel1.TabIndex = 9;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
             // Bconectar
             // 
             this.Bconectar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.Bconectar.Location = new System.Drawing.Point(184, 341);
-            this.Bconectar.Margin = new System.Windows.Forms.Padding(4);
-            this.Bconectar.MaximumSize = new System.Drawing.Size(280, 110);
+            this.Bconectar.Location = new System.Drawing.Point(276, 533);
+            this.Bconectar.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Bconectar.MaximumSize = new System.Drawing.Size(420, 172);
             this.Bconectar.Name = "Bconectar";
-            this.Bconectar.Size = new System.Drawing.Size(183, 75);
+            this.Bconectar.Size = new System.Drawing.Size(274, 117);
             this.Bconectar.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.Bconectar.TabIndex = 11;
             this.Bconectar.TabStop = false;
@@ -153,9 +155,10 @@
             // BBconectar
             // 
             this.BBconectar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.BBconectar.Location = new System.Drawing.Point(173, 331);
+            this.BBconectar.Location = new System.Drawing.Point(260, 517);
+            this.BBconectar.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.BBconectar.Name = "BBconectar";
-            this.BBconectar.Size = new System.Drawing.Size(204, 95);
+            this.BBconectar.Size = new System.Drawing.Size(306, 148);
             this.BBconectar.TabIndex = 12;
             this.BBconectar.Text = "button1";
             this.BBconectar.UseVisualStyleBackColor = true;
@@ -166,10 +169,10 @@
             this.textBoxContra.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxContra.Location = new System.Drawing.Point(114, 275);
-            this.textBoxContra.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxContra.Location = new System.Drawing.Point(171, 430);
+            this.textBoxContra.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.textBoxContra.Name = "textBoxContra";
-            this.textBoxContra.Size = new System.Drawing.Size(352, 22);
+            this.textBoxContra.Size = new System.Drawing.Size(526, 31);
             this.textBoxContra.TabIndex = 10;
             this.textBoxContra.Text = "Ingresa la contraseña";
             this.textBoxContra.TextChanged += new System.EventHandler(this.textBoxContra_TextChanged);
@@ -180,25 +183,24 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxUsuario.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxUsuario.Location = new System.Drawing.Point(114, 181);
-            this.textBoxUsuario.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxUsuario.Location = new System.Drawing.Point(171, 283);
+            this.textBoxUsuario.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.textBoxUsuario.Name = "textBoxUsuario";
-            this.textBoxUsuario.Size = new System.Drawing.Size(352, 23);
+            this.textBoxUsuario.Size = new System.Drawing.Size(526, 32);
             this.textBoxUsuario.TabIndex = 9;
             this.textBoxUsuario.Text = "Ingresa tu usuario";
             this.textBoxUsuario.TextChanged += new System.EventHandler(this.textBoxUsuario_TextChanged);
             // 
-            // Form1
+            // FormLogIn
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(800, 674);
+            this.ClientSize = new System.Drawing.Size(1200, 1053);
             this.Controls.Add(this.panel1);
-            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.Name = "Form1";
-            this.Text = "UniChat LogIn";
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.Name = "FormLogIn";
+            this.Text = "Log In";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
