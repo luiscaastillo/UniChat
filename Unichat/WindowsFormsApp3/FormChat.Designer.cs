@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormChat));
             this.pictureUser = new System.Windows.Forms.PictureBox();
             this.panelSalas = new System.Windows.Forms.Panel();
+            this.pictureSala = new System.Windows.Forms.PictureBox();
             this.deleteUser = new System.Windows.Forms.PictureBox();
             this.treeViewUsers = new System.Windows.Forms.TreeView();
             this.label1 = new System.Windows.Forms.Label();
@@ -40,7 +41,6 @@
             this.BNewChat = new System.Windows.Forms.PictureBox();
             this.treeViewChats = new System.Windows.Forms.TreeView();
             this.labelChats = new System.Windows.Forms.Label();
-            this.pictureSala = new System.Windows.Forms.PictureBox();
             this.panelUser = new System.Windows.Forms.Panel();
             this.panelEmoji = new System.Windows.Forms.Panel();
             this.cool = new System.Windows.Forms.PictureBox();
@@ -66,12 +66,12 @@
             this.panelSalasName = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).BeginInit();
             this.panelSalas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.deleteUser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.addUser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BNewChat)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).BeginInit();
             this.panelEmoji.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.cool)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ajajaja)).BeginInit();
@@ -123,14 +123,27 @@
             this.panelSalas.Margin = new System.Windows.Forms.Padding(10);
             this.panelSalas.Name = "panelSalas";
             this.panelSalas.Padding = new System.Windows.Forms.Padding(10);
-            this.panelSalas.Size = new System.Drawing.Size(406, 957);
+            this.panelSalas.Size = new System.Drawing.Size(406, 889);
             this.panelSalas.TabIndex = 6;
             this.panelSalas.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
+            // 
+            // pictureSala
+            // 
+            this.pictureSala.ErrorImage = null;
+            this.pictureSala.Image = global::WindowsFormsApp3.Properties.Resources.group;
+            this.pictureSala.InitialImage = global::WindowsFormsApp3.Properties.Resources.group;
+            this.pictureSala.Location = new System.Drawing.Point(46, 20);
+            this.pictureSala.Margin = new System.Windows.Forms.Padding(6);
+            this.pictureSala.Name = "pictureSala";
+            this.pictureSala.Size = new System.Drawing.Size(72, 69);
+            this.pictureSala.TabIndex = 9;
+            this.pictureSala.TabStop = false;
+            this.pictureSala.Click += new System.EventHandler(this.pictureSala_Click);
             // 
             // deleteUser
             // 
             this.deleteUser.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.deleteUser.Location = new System.Drawing.Point(313, 594);
+            this.deleteUser.Location = new System.Drawing.Point(313, 560);
             this.deleteUser.Margin = new System.Windows.Forms.Padding(6);
             this.deleteUser.Name = "deleteUser";
             this.deleteUser.Size = new System.Drawing.Size(50, 47);
@@ -142,7 +155,7 @@
             // 
             this.treeViewUsers.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.treeViewUsers.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(166)))), ((int)(((byte)(166)))));
-            this.treeViewUsers.Location = new System.Drawing.Point(46, 535);
+            this.treeViewUsers.Location = new System.Drawing.Point(46, 501);
             this.treeViewUsers.Margin = new System.Windows.Forms.Padding(6);
             this.treeViewUsers.MaximumSize = new System.Drawing.Size(300, 200);
             this.treeViewUsers.MinimumSize = new System.Drawing.Size(245, 150);
@@ -156,7 +169,7 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(140, 479);
+            this.label1.Location = new System.Drawing.Point(140, 445);
             this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(105, 37);
@@ -166,7 +179,7 @@
             // pictureSala1
             // 
             this.pictureSala1.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.pictureSala1.Location = new System.Drawing.Point(46, 452);
+            this.pictureSala1.Location = new System.Drawing.Point(46, 418);
             this.pictureSala1.Margin = new System.Windows.Forms.Padding(6);
             this.pictureSala1.Name = "pictureSala1";
             this.pictureSala1.Size = new System.Drawing.Size(72, 69);
@@ -176,7 +189,7 @@
             // addUser
             // 
             this.addUser.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.addUser.Location = new System.Drawing.Point(313, 535);
+            this.addUser.Location = new System.Drawing.Point(313, 501);
             this.addUser.Margin = new System.Windows.Forms.Padding(6);
             this.addUser.Name = "addUser";
             this.addUser.Size = new System.Drawing.Size(50, 47);
@@ -215,7 +228,7 @@
             this.treeViewChats.Margin = new System.Windows.Forms.Padding(6);
             this.treeViewChats.MinimumSize = new System.Drawing.Size(245, 150);
             this.treeViewChats.Name = "treeViewChats";
-            this.treeViewChats.Size = new System.Drawing.Size(245, 315);
+            this.treeViewChats.Size = new System.Drawing.Size(245, 247);
             this.treeViewChats.TabIndex = 10;
             this.treeViewChats.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeViewChats_AfterSelect);
             // 
@@ -231,19 +244,6 @@
             this.labelChats.TabIndex = 9;
             this.labelChats.Text = "Chats";
             // 
-            // pictureSala
-            // 
-            this.pictureSala.ErrorImage = null;
-            this.pictureSala.Image = global::WindowsFormsApp3.Properties.Resources.group;
-            this.pictureSala.InitialImage = global::WindowsFormsApp3.Properties.Resources.group;
-            this.pictureSala.Location = new System.Drawing.Point(46, 20);
-            this.pictureSala.Margin = new System.Windows.Forms.Padding(6);
-            this.pictureSala.Name = "pictureSala";
-            this.pictureSala.Size = new System.Drawing.Size(72, 69);
-            this.pictureSala.TabIndex = 9;
-            this.pictureSala.TabStop = false;
-            this.pictureSala.Click += new System.EventHandler(this.pictureSala_Click);
-            // 
             // panelUser
             // 
             this.panelUser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -256,7 +256,7 @@
             this.panelUser.Location = new System.Drawing.Point(442, 141);
             this.panelUser.Margin = new System.Windows.Forms.Padding(10);
             this.panelUser.Name = "panelUser";
-            this.panelUser.Size = new System.Drawing.Size(1328, 914);
+            this.panelUser.Size = new System.Drawing.Size(1293, 846);
             this.panelUser.TabIndex = 8;
             this.panelUser.Paint += new System.Windows.Forms.PaintEventHandler(this.panelUser_Paint);
             // 
@@ -277,7 +277,7 @@
             this.panelEmoji.Controls.Add(this.sad);
             this.panelEmoji.Controls.Add(this.close);
             this.panelEmoji.Controls.Add(this.happy);
-            this.panelEmoji.Location = new System.Drawing.Point(1430, 770);
+            this.panelEmoji.Location = new System.Drawing.Point(1395, 702);
             this.panelEmoji.Margin = new System.Windows.Forms.Padding(6);
             this.panelEmoji.Name = "panelEmoji";
             this.panelEmoji.Size = new System.Drawing.Size(326, 272);
@@ -418,10 +418,10 @@
             // 
             this.RichMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.RichMessage.Location = new System.Drawing.Point(442, 1063);
+            this.RichMessage.Location = new System.Drawing.Point(442, 995);
             this.RichMessage.Margin = new System.Windows.Forms.Padding(10);
             this.RichMessage.Name = "RichMessage";
-            this.RichMessage.Size = new System.Drawing.Size(1328, 35);
+            this.RichMessage.Size = new System.Drawing.Size(1293, 35);
             this.RichMessage.TabIndex = 12;
             this.RichMessage.Text = "";
             this.RichMessage.TextChanged += new System.EventHandler(this.RichMessage_TextChanged);
@@ -437,14 +437,14 @@
             this.panelName.Location = new System.Drawing.Point(442, 25);
             this.panelName.Margin = new System.Windows.Forms.Padding(10);
             this.panelName.Name = "panelName";
-            this.panelName.Size = new System.Drawing.Size(1328, 106);
+            this.panelName.Size = new System.Drawing.Size(1293, 106);
             this.panelName.TabIndex = 11;
             // 
             // BLogOut
             // 
             this.BLogOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BLogOut.Image = global::WindowsFormsApp3.Properties.Resources.logout;
-            this.BLogOut.Location = new System.Drawing.Point(1236, 17);
+            this.BLogOut.Location = new System.Drawing.Point(1201, 17);
             this.BLogOut.Margin = new System.Windows.Forms.Padding(6);
             this.BLogOut.Name = "BLogOut";
             this.BLogOut.Size = new System.Drawing.Size(72, 69);
@@ -468,7 +468,7 @@
             // BEmoji
             // 
             this.BEmoji.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.BEmoji.Location = new System.Drawing.Point(1662, 1109);
+            this.BEmoji.Location = new System.Drawing.Point(1627, 1041);
             this.BEmoji.Margin = new System.Windows.Forms.Padding(6);
             this.BEmoji.Name = "BEmoji";
             this.BEmoji.Size = new System.Drawing.Size(48, 41);
@@ -479,7 +479,7 @@
             // BEnviarMsj
             // 
             this.BEnviarMsj.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.BEnviarMsj.Location = new System.Drawing.Point(1722, 1109);
+            this.BEnviarMsj.Location = new System.Drawing.Point(1687, 1041);
             this.BEnviarMsj.Margin = new System.Windows.Forms.Padding(6);
             this.BEnviarMsj.Name = "BEnviarMsj";
             this.BEnviarMsj.Size = new System.Drawing.Size(48, 41);
@@ -516,7 +516,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(1809, 1197);
+            this.ClientSize = new System.Drawing.Size(1774, 1129);
             this.Controls.Add(this.panelEmoji);
             this.Controls.Add(this.panelName);
             this.Controls.Add(this.panelSalas);
@@ -535,12 +535,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureUser)).EndInit();
             this.panelSalas.ResumeLayout(false);
             this.panelSalas.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.deleteUser)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSala1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.addUser)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BDeleteChat)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BNewChat)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureSala)).EndInit();
             this.panelEmoji.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.cool)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ajajaja)).EndInit();

@@ -13,10 +13,10 @@ public class ChatServer
 
     public static async Task Main(string[] args)
     {
-        Console.WriteLine("Server Initialized on port 9000...");
+        Console.WriteLine("Initializing UniChat Server...");
         TcpListener listener = new TcpListener(IPAddress.Any, 9000);
         listener.Start();
-
+        Console.WriteLine("Server ready. Waiting for connections...");
         while (true)
         {
             // Espera a que un nuevo cliente se conecte
@@ -39,7 +39,6 @@ public class ChatServer
         {
             clientWriters.Add(writer);
         }
-
         try
         {
             while (true)

@@ -174,7 +174,7 @@ namespace Unichat
             }
         }
         private void textBoxContra_TextChanged(object sender, EventArgs e) { }
-        private void Bconectar_Click_1(object sender, EventArgs e)
+        private async void Bconectar_Click_1(object sender, EventArgs e)
         {
             try
             {
@@ -206,12 +206,22 @@ namespace Unichat
                                     // Guarda el usuario actual (Static Class)
                                     CurrentUser.SetCurrentUser(idObtenido, username);
 
-                                    ConnectToServer();
+                                    // Conectar al servidor primero
+                                    bool connected = await ConnectToServerAsync();
 
-                                    MessageBox.Show("LogIn Exitoso");
-                                    FormChat chatForm = new FormChat();
-                                    chatForm.Show();
-                                    this.Hide();
+                                    if (connected)
+                                    {
+                                        MessageBox.Show("LogIn Exitoso");
+
+                                        // Pasar la conexión TCP al FormChat
+                                        FormChat chatForm = new FormChat(client, this.reader, this.writer);
+                                        chatForm.Show();
+                                        this.Hide();
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("No se pudo conectar al servidor de chat.");
+                                    }
                                 }
                                 else
                                 {
@@ -237,65 +247,42 @@ namespace Unichat
 
         private void labelUsuario_Click(object sender, EventArgs e){ }
 
-       
-        private async void ConnectToServer()
+        private async Task<bool> ConnectToServerAsync()
         {
             try
             {
                 client = new TcpClient();
 
-                // Reemplaza "127.0.0.1" con la IP del servidor si está en otra máquina
+                // Conectar al servidor
                 await client.ConnectAsync("127.0.0.1", 9000);
 
                 NetworkStream stream = client.GetStream();
-                reader = new StreamReader(stream);
-                writer = new StreamWriter(stream) { AutoFlush = true };
+                reader = new StreamReader(stream, Encoding.UTF8);
+                writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                // Envía el nombre de usuario al servidor para identificar la conexión
-                await writer.WriteLineAsync($"{usernameTCP} joined");
+                // Enviar autenticación al servidor
+                await writer.WriteLineAsync($"{usernameTCP}#{CurrentUser.IdUser} has joined");
+
+                return true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("No se pudo conectar al servidor: " + ex.Message);
+                return false;
             }
         }
 
-        // Tarea en segundo plano para escuchar
-        private async Task ReceiveMessages()
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            try
+            base.OnFormClosing(e);
+            
+            // Limpiar conexión TCP si existe
+            if (client != null && client.Connected)
             {
-                while (true)
-                {
-                    string message = await reader.ReadLineAsync();
-                    if (message == null) break;
-
-                    // ¡IMPORTANTE! No puedes actualizar la UI desde un hilo
-                    // que no sea el principal. Usa Invoke.
-                    UpdateChat(message);
-                }
-            }
-            catch (Exception)
-            {
-                UpdateChat("Se perdió la conexión con el servidor.");
+                writer?.Close();
+                reader?.Close();
+                client?.Close();
             }
         }
-        
-        private void UpdateChat(string message)
-        {
-            /*
-            if (txtChat.InvokeRequired)
-            {
-                // Si estamos en un hilo diferente, invocamos al hilo principal
-                txtChat.Invoke(new Action<string>(UpdateChat), message);
-            }
-            else
-            {
-                // Si ya estamos en el hilo principal, actualizamos directamente
-                txtChat.AppendText(message + Environment.NewLine);
-            }
-            */
-        }
-        
     }
 }

@@ -61,10 +61,9 @@ namespace UniChat
                 // Start listening for messages
                 _ = Task.Run(() => ReceiveMessages());
             }
-                        else
+            else
             {
                 // Auto-connect to server (configure your server IP and port)
-                _ = ConnectToServer("127.0.0.1", 9000);
             }
 
             string user = CurrentUser.Username;
@@ -163,25 +162,25 @@ namespace UniChat
                     }
 
                     // Parse message format: MSG|id_chat|username|content
-                    string[] parts = message.Split(new[] { '|' }, 4); // Limitar a 4 partes
+                    string[] parts = message.Split(new[] { '|' }, 4);
                     
                     if (parts.Length >= 4 && parts[0] == "MSG")
                     {
                         int id_chat = int.Parse(parts[1]);
                         string username = parts[2];
-                        string content = parts[3]; // Contenido completo del mensaje
+                        string content = parts[3];
                         
-                        // Only display if it's not from current user
+                        // Only process if it's not from current user
                         if (username != CurrentUser.Username)
                         {
-                            // Guardar el mensaje en la base de datos
-                            SaveReceivedMessage(id_chat, username, content);
+                            // 1. Save to database FIRST
+                            await Task.Run(() => SaveReceivedMessage(id_chat, username, content));
                             
-                            // Check if this message is for the currently selected chat
+                            // 2. Check if this is the currently selected chat
                             bool isCurrentChat = false;
-                            if (treeViewChats.InvokeRequired)
+                            if (this.InvokeRequired)
                             {
-                                treeViewChats.Invoke(new Action(() =>
+                                this.Invoke(new Action(() =>
                                 {
                                     isCurrentChat = treeViewChats.SelectedNode?.Tag != null && 
                                                   (int)treeViewChats.SelectedNode.Tag == id_chat;
@@ -193,7 +192,7 @@ namespace UniChat
                                               (int)treeViewChats.SelectedNode.Tag == id_chat;
                             }
 
-                            // Solo mostrar si es el chat actualmente seleccionado
+                            // 3. Display if it's the active chat
                             if (isCurrentChat)
                             {
                                 DisplayMessage(username, content, DateTime.Now, false);
@@ -206,10 +205,17 @@ namespace UniChat
             {
                 if (isConnected)
                 {
-                    this.Invoke(new Action(() =>
+                    try
                     {
-                        MessageBox.Show("Error al recibir mensajes: " + ex.Message);
-                    }));
+                        this.Invoke(new Action(() =>
+                        {
+                            MessageBox.Show("Error al recibir mensajes: " + ex.Message);
+                        }));
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Form already closed
+                    }
                     isConnected = false;
                 }
             }
@@ -272,28 +278,35 @@ namespace UniChat
                 {
                     int id_chat = (int)treeViewChats.SelectedNode.Tag;
                     
-                    // 1. Guardar en base de datos PRIMERO
-                    SaveMessageWithMentions(id_chat, mensaje);
-
-                    // 2. Mostrar localmente
-                    string username = CurrentUser.Username;
-                    DateTime fecha = DateTime.Now;
-                    DisplayMessage(username, mensaje, fecha, true);
-                    
-                    // 3. Enviar por socket DESPUÉS (si está conectado)
-                    if (isConnected && writer != null)
+                    try
                     {
-                        try
+                        // 1. Save to database FIRST
+                        await Task.Run(() => SaveMessageWithMentions(id_chat, mensaje));
+
+                        // 2. Display locally immediately
+                        string username = CurrentUser.Username;
+                        DateTime fecha = DateTime.Now;
+                        DisplayMessage(username, mensaje, fecha, true);
+                        
+                        // 3. Send to server (if connected)
+                        if (isConnected && writer != null)
                         {
+                            // Use the format: MSG|id_chat|username|content
                             string messagePacket = $"MSG|{id_chat}|{CurrentUser.Username}|{mensaje}";
                             await writer.WriteLineAsync(messagePacket);
                             await writer.FlushAsync();
                         }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Error al enviar mensaje por socket: " + ex.Message);
-                            isConnected = false;
-                        }
+                        
+                        // 4. Clear input
+                        RichMessage.Clear();
+                        RichMessage.Text = "";
+                        RichMessage.ForeColor = Color.Gray;
+                        RichMessage.Focus();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error al enviar mensaje: " + ex.Message);
+                        isConnected = false;
                     }
                 }
             }
@@ -862,8 +875,8 @@ namespace UniChat
             {
                 using (var connection = DbConfig.GetOpenConnection())
                 {
-                    // Obtener el id_user del remitente por su username
-                    string getUserQuery = "SELECT id_user FROM users WHERE username = @username";
+                    // Get sender's id_user by username
+                    string getUserQuery = "SELECT id_user FROM users WHERE username = @username LIMIT 1";
                     int senderId = 0;
                     
                     using (var cmdUser = new MySqlCommand(getUserQuery, connection))
@@ -878,12 +891,12 @@ namespace UniChat
 
                     if (senderId > 0)
                     {
-                        // Verificar si el mensaje ya existe (evitar duplicados)
+                        // Check for duplicates (messages within last 2 seconds)
                         string checkQuery = @"SELECT COUNT(*) FROM messages 
-                                             WHERE id_chat = @id_chat 
-                                             AND id_user = @senderId 
-                                             AND content = @content 
-                                             AND sendingDate >= DATE_SUB(NOW(), INTERVAL 5 SECOND)";
+                                     WHERE id_chat = @id_chat 
+                                     AND id_user = @senderId 
+                                     AND content = @content 
+                                     AND sendingDate >= DATE_SUB(NOW(), INTERVAL 2 SECOND)";
                         
                         using (var cmdCheck = new MySqlCommand(checkQuery, connection))
                         {
@@ -895,7 +908,7 @@ namespace UniChat
                             
                             if (count == 0)
                             {
-                                // Insertar el mensaje
+                                // Insert message
                                 string insertQuery = @"INSERT INTO messages (content, sendingDate, id_user, id_chat) 
                                                       VALUES (@content, NOW(), @senderId, @id_chat)";
                                 
@@ -913,7 +926,7 @@ namespace UniChat
             }
             catch (MySqlException ex)
             {
-                // Log error pero no mostrar MessageBox en thread secundario
+                // Log error but don't show MessageBox in background thread
                 System.Diagnostics.Debug.WriteLine("Error al guardar mensaje recibido: " + ex.Message);
             }
         }
