@@ -1,10 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
-using Mysqlx.Crud;
-using MySqlX.XDevAPI;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -14,33 +10,21 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Unichat;
 using WindowsFormsApp3;
-
+using Newtonsoft.Json;
 
 namespace UniChat
 {
     public partial class FormChat : Form
     {
-
-        // 🌟 MAPEO DE EMOJIS (códigos de texto a Unicode)
         private readonly Dictionary<string, string> EmojiMap = new Dictionary<string, string>
         {
-            { ":happy:", "😀"},
-            { ":sad:", "😔" },
-            { ":angry:", "😡" },
-            { ":cry:", "😭" },
-            { ":eww:", "🤢" },
-            { ":like:", "👍" },
-            { ":corazon:", "❤️" },
-            { ":lover:", "🥰" },
-            { ":kiss:", "😘" },
-            { ":pray:", "🙏" },
-            { ":ajajaj:", "🤣" },
-            { ":cool:", "😎" }
+            { ":happy:", "😀"}, { ":sad:", "😔" }, { ":angry:", "😡" }, 
+            { ":cry:", "😭" }, { ":eww:", "🤢" }, { ":like:", "👍" }, 
+            { ":corazon:", "❤️" }, { ":lover:", "🥰" }, { ":kiss:", "😘" }, 
+            { ":pray:", "🙏" }, { ":ajajaj:", "🤣" }, { ":cool:", "😎" }
         };
 
         private readonly Dictionary<string, Image> EmojiImages = new Dictionary<string, Image>();
-        // Asignar imágenes a EmojiImages solo una vez
-
 
         private TcpClient client;
         private StreamReader reader;
@@ -60,10 +44,6 @@ namespace UniChat
 
                 // Start listening for messages
                 _ = Task.Run(() => ReceiveMessages());
-            }
-            else
-            {
-                // Auto-connect to server (configure your server IP and port)
             }
 
             string user = CurrentUser.Username;
@@ -152,54 +132,75 @@ namespace UniChat
             {
                 while (isConnected && reader != null)
                 {
-                    string message = await reader.ReadLineAsync();
+                    string messageJson = await reader.ReadLineAsync();
                     
-                    if (string.IsNullOrEmpty(message))
+                    if (string.IsNullOrEmpty(messageJson))
                     {
                         // Connection closed
                         isConnected = false;
                         break;
                     }
 
-                    // Parse message format: MSG|id_chat|username|content
-                    string[] parts = message.Split(new[] { '|' }, 4);
+                    // Deserializar respuesta JSON
+                    var response = JsonConvert.DeserializeObject<ServerResponse>(messageJson);
                     
-                    if (parts.Length >= 4 && parts[0] == "MSG")
+                    if (response.Type == "NEW_MESSAGE")
                     {
-                        int id_chat = int.Parse(parts[1]);
-                        string username = parts[2];
-                        string content = parts[3];
-                        
-                        // Only process if it's not from current user
-                        if (username != CurrentUser.Username)
+                        // Solo procesar si no es del usuario actual
+                        if (response.Username != CurrentUser.Username)
                         {
-                            // 1. Save to database FIRST
-                            await Task.Run(() => SaveReceivedMessage(id_chat, username, content));
+                            // Guardar en base de datos
+                            await Task.Run(() => SaveReceivedMessageFromServer(response.Username, response.Content));
                             
-                            // 2. Check if this is the currently selected chat
+                            // Mostrar si es el chat activo
                             bool isCurrentChat = false;
                             if (this.InvokeRequired)
                             {
                                 this.Invoke(new Action(() =>
                                 {
-                                    isCurrentChat = treeViewChats.SelectedNode?.Tag != null && 
-                                                  (int)treeViewChats.SelectedNode.Tag == id_chat;
+                                    isCurrentChat = treeViewChats.SelectedNode?.Tag != null;
                                 }));
                             }
                             else
                             {
-                                isCurrentChat = treeViewChats.SelectedNode?.Tag != null && 
-                                              (int)treeViewChats.SelectedNode.Tag == id_chat;
+                                isCurrentChat = treeViewChats.SelectedNode?.Tag != null;
                             }
 
                             // 3. Display if it's the active chat
                             if (isCurrentChat)
                             {
-                                DisplayMessage(username, content, DateTime.Now, false);
+                                DateTime timestamp = DateTime.Parse(response.Timestamp);
+                                DisplayMessage(response.Username, response.Content, timestamp, false);
                             }
                         }
                     }
-                }
+                    else if (response.Type == "MESSAGES_LOADED")
+                    {
+                        // Cargar mensajes históricos
+                        if (response.Messages != null)
+                        {
+                            foreach (var msg in response.Messages)
+                            {
+                                DateTime timestamp = DateTime.Parse(msg.Timestamp);
+                                bool esPropio = msg.Username == CurrentUser.Username;
+                                DisplayMessage(msg.Username, msg.Content, timestamp, esPropio);
+                            }
+                        }
+                    }
+                    else if (response.Type == "MESSAGES_LOADED")
+                    {
+                        // Cargar mensajes históricos
+                        if (response.Messages != null)
+                        {
+                            foreach (var msg in response.Messages)
+                            {
+                                DateTime timestamp = DateTime.Parse(msg.Timestamp);
+                                bool esPropio = msg.Username == CurrentUser.Username;
+                                DisplayMessage(msg.Username, msg.Content, timestamp, esPropio);
+                            }
+                        }
+                    }
+                    }
             }
             catch (Exception ex)
             {
@@ -221,53 +222,6 @@ namespace UniChat
             }
         }
 
-        private void FormChat_Load(object sender, EventArgs e)
-        {
-            RichMessage.Text = "Escribe un mensaje";
-            RichMessage.ForeColor = Color.Gray;
-
-            RichMessage.Enter += RichMessage_Enter;
-            RichMessage.Leave += RichMessage_Leave;
-            RichMessage.KeyDown += RichMessage_KeyDown;
-
-            CargarChatsUsuario(treeViewChats);
-            labelUsername.Text = CurrentUser.Username;
-
-            panelEmoji.Visible = false;
-        }
-
-        private void textBoxMessage_TextChanged(object sender, EventArgs e) { }
-
-        private void RichMessage_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                BEnviarMsj_Click(BEnviarMsj, EventArgs.Empty);
-                e.SuppressKeyPress = true;
-            }
-        }
-        private void RichMessage_Enter(object sender, EventArgs e)
-        {
-            if (RichMessage.Text == "Escribe un mensaje")
-            {
-                RichMessage.Text = "";
-                RichMessage.ForeColor = Color.Black;
-            }
-        }
-
-        private void RichMessage_Leave(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(RichMessage.Text))
-            {
-                RichMessage.Text = "Escribe un mensaje";
-                RichMessage.ForeColor = Color.Gray;
-            }
-        }
-        private void label2_Click(object sender, EventArgs e) { }
-        private void panel2_Paint(object sender, PaintEventArgs e) { }
-        private void panelUser_Paint(object sender, PaintEventArgs e) { }
-        private void pictureUser_Click(object sender, EventArgs e) { }
-
         private async void BEnviarMsj_Click(object sender, EventArgs e)
         {
             string mensaje = RichMessage.Text.Trim();
@@ -280,24 +234,30 @@ namespace UniChat
                     
                     try
                     {
-                        // 1. Save to database FIRST
+                        // 1. Guardar en base de datos local primero
                         await Task.Run(() => SaveMessageWithMentions(id_chat, mensaje));
 
-                        // 2. Display locally immediately
+                        // 2. Mostrar localmente
                         string username = CurrentUser.Username;
                         DateTime fecha = DateTime.Now;
                         DisplayMessage(username, mensaje, fecha, true);
                         
-                        // 3. Send to server (if connected)
+                        // 3. Enviar al servidor usando JSON
                         if (isConnected && writer != null)
                         {
-                            // Use the format: MSG|id_chat|username|content
-                            string messagePacket = $"MSG|{id_chat}|{CurrentUser.Username}|{mensaje}";
-                            await writer.WriteLineAsync(messagePacket);
+                            var request = new ClientRequest
+                            {
+                                Command = "SEND_MESSAGE",
+                                Content = mensaje,
+                                ChatId = id_chat
+                            };
+                            
+                            string json = JsonConvert.SerializeObject(request);
+                            await writer.WriteLineAsync(json);
                             await writer.FlushAsync();
                         }
                         
-                        // 4. Clear input
+                        // 4. Limpiar input
                         RichMessage.Clear();
                         RichMessage.Text = "";
                         RichMessage.ForeColor = Color.Gray;
@@ -315,6 +275,199 @@ namespace UniChat
             RichMessage.ForeColor = Color.Gray;
             RichMessage.Focus();
         }
+
+        public async Task<bool> ConnectToServer(string serverIP, int port)
+        {
+            try
+            {
+                client = new TcpClient();
+                await client.ConnectAsync(serverIP, port);
+                
+                NetworkStream stream = client.GetStream();
+                reader = new StreamReader(stream, Encoding.UTF8);
+                writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+                
+                isConnected = true;
+                
+                // Enviar LOGIN usando JSON
+                var loginRequest = new ClientRequest
+                {
+                    Command = "LOGIN",
+                    Username = CurrentUser.Username,
+                    Password = "" // No enviamos la contraseña porque ya autenticamos localmente
+                };
+                
+                string json = JsonConvert.SerializeObject(loginRequest);
+                await writer.WriteLineAsync(json);
+                
+                // Esperar respuesta
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+                
+                if (response.Type == "LOGIN_SUCCESS" || response.Type == "ERROR")
+                {
+                    // Iniciar recepción de mensajes
+                    _ = Task.Run(() => ReceiveMessages());
+                    
+                    // Cargar mensajes del servidor
+                    await LoadMessagesFromServer(50);
+                    
+                    return response.Type == "LOGIN_SUCCESS";
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al conectar con el servidor: " + ex.Message);
+                return false;
+            }
+        }
+
+        private async Task LoadMessagesFromServer(int count)
+        {
+            if (!isConnected || writer == null) return;
+            
+            try
+            {
+                var request = new ClientRequest
+                {
+                    Command = "LOAD_MESSAGES",
+                    Count = count
+                };
+                
+                string json = JsonConvert.SerializeObject(request);
+                await writer.WriteLineAsync(json);
+                await writer.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error al cargar mensajes: " + ex.Message);
+            }
+        }
+
+        private async void DisconnectFromServer()
+        {
+            if (!isConnected) return;
+            
+            isConnected = false;
+            
+            if (writer != null)
+            {
+                try
+                {
+                    var request = new ClientRequest { Command = "DISCONNECT" };
+                    string json = JsonConvert.SerializeObject(request);
+                    await writer.WriteLineAsync(json);
+                    await writer.FlushAsync();
+                    writer.Dispose();
+                }
+                catch { }
+                writer = null;
+            }
+            
+            if (reader != null)
+            {
+                reader.Dispose();
+                reader = null;
+            }
+            
+            if (client != null)
+            {
+                client.Close();
+                client = null;
+            }
+        }
+
+        private void SaveReceivedMessageFromServer(string username, string content)
+        {
+            try
+            {
+                if (treeViewChats.SelectedNode?.Tag == null) return;
+                
+                int id_chat = (int)treeViewChats.SelectedNode.Tag;
+                
+                using (var connection = DbConfig.GetOpenConnection())
+                {
+                    string getUserQuery = "SELECT id_user FROM users WHERE username = @username LIMIT 1";
+                    int senderId = 0;
+                    
+                    using (var cmdUser = new MySqlCommand(getUserQuery, connection))
+                    {
+                        cmdUser.Parameters.AddWithValue("@username", username);
+                        var result = cmdUser.ExecuteScalar();
+                        if (result != null)
+                        {
+                            senderId = Convert.ToInt32(result);
+                        }
+                    }
+
+                    if (senderId > 0)
+                    {
+                        string insertQuery = @"INSERT INTO messages (content, sendingDate, id_user, id_chat) 
+                                              VALUES (@content, NOW(), @senderId, @id_chat)";
+                        
+                        using (var cmdInsert = new MySqlCommand(insertQuery, connection))
+                        {
+                            cmdInsert.Parameters.AddWithValue("@id_chat", id_chat);
+                            cmdInsert.Parameters.AddWithValue("@senderId", senderId);
+                            cmdInsert.Parameters.AddWithValue("@content", content);
+                            cmdInsert.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error al guardar mensaje: " + ex.Message);
+            }
+        }
+
+        // ... [Mantén todos los demás métodos existentes: FormChat_Load, RichMessage_KeyDown, 
+        //      HighlightMentions, SaveMessageWithMentions, BEmoji_Click, ResizeImage, 
+        //      ShowImageDialog, BLogOut_Click, BNewChat_Click, treeViewChats_AfterSelect,
+        //      CargarChatMembers, InicializarEmojiImages, CargarMensajesChat, DisplayMessage,
+        //      CargarChatsUsuario, BDeleteChat_Click, addUser_Click, deleteUser_Click, etc.] ...
+
+        private void FormChat_Load(object sender, EventArgs e)
+        {
+            RichMessage.Text = "Escribe un mensaje";
+            RichMessage.ForeColor = Color.Gray;
+            RichMessage.Enter += RichMessage_Enter;
+            RichMessage.Leave += RichMessage_Leave;
+            RichMessage.KeyDown += RichMessage_KeyDown;
+            CargarChatsUsuario(treeViewChats);
+            labelUsername.Text = CurrentUser.Username;
+            panelEmoji.Visible = false;
+        }
+
+        private void RichMessage_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                BEnviarMsj_Click(BEnviarMsj, EventArgs.Empty);
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void RichMessage_Enter(object sender, EventArgs e)
+        {
+            if (RichMessage.Text == "Escribe un mensaje")
+            {
+                RichMessage.Text = "";
+                RichMessage.ForeColor = Color.Black;
+            }
+        }
+
+        private void RichMessage_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(RichMessage.Text))
+            {
+                RichMessage.Text = "Escribe un mensaje";
+                RichMessage.ForeColor = Color.Gray;
+            }
+        }
+
         private void HighlightMentions(RichTextBox rtb)
         {
             string text = rtb.Text;
@@ -406,13 +559,7 @@ namespace UniChat
             form.ShowDialog();
         }
 
-        private void labelUsername_Click(object sender, EventArgs e) { }
-        private void pictureSala_Click(object sender, EventArgs e) { }
-
-        private void BLogOut_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
+        private void BLogOut_Click(object sender, EventArgs e) { Application.Exit(); }
 
         private void BNewChat_Click(object sender, EventArgs e)
         {
@@ -441,24 +588,20 @@ namespace UniChat
                 CargarChatMembers(idChatSeleccionado);
             }
         }
+
         private void CargarChatMembers(int id_chat)
         {
             treeViewUsers.Nodes.Clear();
-
             try
             {
                 using (var connection = DbConfig.GetOpenConnection())
                 {
-                    string query = @"
-                SELECT u.username
-                FROM users u
-                INNER JOIN chat_members cm ON u.id_user = cm.id_user
-                WHERE cm.id_chat = @id_chat";
-
+                    string query = @"SELECT u.username FROM users u
+                                    INNER JOIN chat_members cm ON u.id_user = cm.id_user
+                                    WHERE cm.id_chat = @id_chat";
                     using (var cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@id_chat", id_chat);
-
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -522,16 +665,12 @@ namespace UniChat
             {
                 using (var connection = DbConfig.GetOpenConnection())
                 {
-                    string query = @"
-                                    SELECT m.content, m.sendingDate, m.id_user, u.username
-                                    FROM messages m
-                                    INNER JOIN users u ON m.id_user = u.id_user
-                                    WHERE m.id_chat = @id_chat
-                                    ORDER BY m.sendingDate ASC";
+                    string query = @"SELECT m.content, m.sendingDate, m.id_user, u.username
+                                    FROM messages m INNER JOIN users u ON m.id_user = u.id_user
+                                    WHERE m.id_chat = @id_chat ORDER BY m.sendingDate ASC";
                     using (var cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@id_chat", id_chat);
-
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -540,9 +679,7 @@ namespace UniChat
                                 DateTime fecha = Convert.ToDateTime(reader["sendingDate"]);
                                 int idUser = Convert.ToInt32(reader["id_user"]);
                                 string username = reader["username"].ToString();
-
                                 bool esPropio = (idUser == CurrentUser.IdUser);
-
                                 DisplayMessage(username, contenido, fecha, esPropio);
                             }
                         }
@@ -600,14 +737,8 @@ namespace UniChat
 
             if (panelUser.InvokeRequired)
             {
-                try
-                {
-                    panelUser.Invoke(displayAction);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // El formulario se cerró, ignorar
-                }
+                try { panelUser.Invoke(displayAction); }
+                catch (ObjectDisposedException) { }
             }
             else
             {
@@ -623,23 +754,18 @@ namespace UniChat
             {
                 using (var connection = DbConfig.GetOpenConnection())
                 {
-                    string query = @"
-                SELECT c.id_chat, c.chat_name
-                FROM chats c
-                INNER JOIN chat_members cm ON c.id_chat = cm.id_chat
-                WHERE cm.id_user = @id_user";
-
+                    string query = @"SELECT c.id_chat, c.chat_name FROM chats c
+                                    INNER JOIN chat_members cm ON c.id_chat = cm.id_chat
+                                    WHERE cm.id_user = @id_user";
                     using (var cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@id_user", CurrentUser.IdUser);
-
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 int idChat = Convert.ToInt32(reader["id_chat"]);
                                 string nombreChat = reader["chat_name"].ToString();
-
                                 TreeNode nodo = new TreeNode(nombreChat);
                                 nodo.Tag = idChat;
                                 treeView.Nodes.Add(nodo);
@@ -660,7 +786,6 @@ namespace UniChat
             {
                 int idChatSeleccionado = (int)treeViewChats.SelectedNode.Tag;
                 var confirmResult = MessageBox.Show("¿Estás seguro de que deseas eliminar este chat?", "Confirmar eliminación", MessageBoxButtons.YesNo);
-
                 if (confirmResult == DialogResult.Yes)
                 {
                     try
@@ -697,6 +822,13 @@ namespace UniChat
             }
         }
 
+        private void textBoxMessage_TextChanged(object sender, EventArgs e) { }
+        private void label2_Click(object sender, EventArgs e) { }
+        private void panel2_Paint(object sender, PaintEventArgs e) { }
+        private void panelUser_Paint(object sender, PaintEventArgs e) { }
+        private void pictureUser_Click(object sender, EventArgs e) { }
+        private void labelUsername_Click(object sender, EventArgs e) { }
+        private void pictureSala_Click(object sender, EventArgs e) { }
         private void panelEmoji_Paint(object sender, PaintEventArgs e) { }
         private void RichMessage_TextChanged(object sender, EventArgs e) { }
         private void kiss_Click(object sender, EventArgs e) { InsertEmojiCode(":kiss:"); }
@@ -713,7 +845,6 @@ namespace UniChat
         private void cool_Click(object sender, EventArgs e) { InsertEmojiCode(":cool:"); }
         private void close_Click(object sender, EventArgs e) { panelEmoji.Visible = false; }
 
-        // Método auxiliar para insertar el código en la posición del cursor
         private void InsertEmojiCode(string code)
         {
             int pos = RichMessage.SelectionStart;
@@ -723,12 +854,11 @@ namespace UniChat
             panelEmoji.Visible = false;
         }
 
-        // Renderiza los emojis como imágenes en el RichTextBox
         private void RenderMessageWithEmojis(RichTextBox rtb, string message)
         {
             int idx = 0;
             bool wasReadOnly = rtb.ReadOnly;
-            rtb.ReadOnly = false; // Permitir pegar imágenes
+            rtb.ReadOnly = false;
 
             while (idx < message.Length)
             {
@@ -758,8 +888,7 @@ namespace UniChat
                     idx++;
                 }
             }
-
-            rtb.ReadOnly = wasReadOnly; // Restaurar estado original
+            rtb.ReadOnly = wasReadOnly;
         }
 
         private void addUser_Click(object sender, EventArgs e) 
@@ -769,14 +898,11 @@ namespace UniChat
                 MessageBox.Show("Por favor, selecciona un chat primero.");
                 return;
             }
-
             int id_chat = (int)treeViewChats.SelectedNode.Tag;
-
             using (var formAnadirUsuario = new FormAnadirUsuario(id_chat))
             {
                 if (formAnadirUsuario.ShowDialog() == DialogResult.OK)
                 {
-                    // Recargar la lista de miembros del chat
                     CargarChatMembers(id_chat);
                 }
             }
@@ -789,147 +915,20 @@ namespace UniChat
                 MessageBox.Show("Por favor, selecciona un chat primero.");
                 return;
             }
-
             int id_chat = (int)treeViewChats.SelectedNode.Tag;
-            
             using (var formEliminarUsuario = new FormEliminarUsuario(id_chat))
             {
                 if (formEliminarUsuario.ShowDialog() == DialogResult.OK)
                 {
-                    // Recargar la lista de miembros del chat
                     CargarChatMembers(id_chat);
                 }
             }
         }
 
         private void groupBox1_Enter(object sender, EventArgs e){ }
-
         private void panel1_Paint(object sender, PaintEventArgs e){ }
-
         private void panelSalasName_Paint(object sender, PaintEventArgs e){ }
-
-        public async Task<bool> ConnectToServer(string serverIP, int port)
-        {
-            try
-            {
-                client = new TcpClient();
-                await client.ConnectAsync(serverIP, port);
-                
-                NetworkStream stream = client.GetStream();
-                reader = new StreamReader(stream, Encoding.UTF8);
-                writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
-                
-                isConnected = true;
-                
-                // Send authentication
-                await writer.WriteLineAsync($"AUTH|{CurrentUser.Username}|{CurrentUser.IdUser}");
-                
-                // Start receiving messages
-                _ = Task.Run(() => ReceiveMessages());
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al conectar con el servidor: " + ex.Message);
-                return false;
-            }
-        }
-
-        private async void DisconnectFromServer()
-        {
-            if (!isConnected) return;
-            
-            isConnected = false;
-            
-            if (writer != null)
-            {
-                try
-                {
-                    await writer.WriteLineAsync("DISCONNECT");
-                    await writer.FlushAsync();
-                    writer.Dispose();
-                }
-                catch { }
-                writer = null;
-            }
-            
-            if (reader != null)
-            {
-                reader.Dispose();
-                reader = null;
-            }
-            
-            if (client != null)
-            {
-                client.Close();
-                client = null;
-            }
-        }
-
         private void FormChat_FormClosing(object sender, FormClosingEventArgs e) { DisconnectFromServer(); }
-
-        private void SaveReceivedMessage(int id_chat, string username, string content)
-        {
-            try
-            {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    // Get sender's id_user by username
-                    string getUserQuery = "SELECT id_user FROM users WHERE username = @username LIMIT 1";
-                    int senderId = 0;
-                    
-                    using (var cmdUser = new MySqlCommand(getUserQuery, connection))
-                    {
-                        cmdUser.Parameters.AddWithValue("@username", username);
-                        var result = cmdUser.ExecuteScalar();
-                        if (result != null)
-                        {
-                            senderId = Convert.ToInt32(result);
-                        }
-                    }
-
-                    if (senderId > 0)
-                    {
-                        // Check for duplicates (messages within last 2 seconds)
-                        string checkQuery = @"SELECT COUNT(*) FROM messages 
-                                     WHERE id_chat = @id_chat 
-                                     AND id_user = @senderId 
-                                     AND content = @content 
-                                     AND sendingDate >= DATE_SUB(NOW(), INTERVAL 2 SECOND)";
-                        
-                        using (var cmdCheck = new MySqlCommand(checkQuery, connection))
-                        {
-                            cmdCheck.Parameters.AddWithValue("@id_chat", id_chat);
-                            cmdCheck.Parameters.AddWithValue("@senderId", senderId);
-                            cmdCheck.Parameters.AddWithValue("@content", content);
-                            
-                            int count = Convert.ToInt32(cmdCheck.ExecuteScalar());
-                            
-                            if (count == 0)
-                            {
-                                // Insert message
-                                string insertQuery = @"INSERT INTO messages (content, sendingDate, id_user, id_chat) 
-                                                      VALUES (@content, NOW(), @senderId, @id_chat)";
-                                
-                                using (var cmdInsert = new MySqlCommand(insertQuery, connection))
-                                {
-                                    cmdInsert.Parameters.AddWithValue("@id_chat", id_chat);
-                                    cmdInsert.Parameters.AddWithValue("@senderId", senderId);
-                                    cmdInsert.Parameters.AddWithValue("@content", content);
-                                    cmdInsert.ExecuteNonQuery();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                // Log error but don't show MessageBox in background thread
-                System.Diagnostics.Debug.WriteLine("Error al guardar mensaje recibido: " + ex.Message);
-            }
-        }
     }
 }
 

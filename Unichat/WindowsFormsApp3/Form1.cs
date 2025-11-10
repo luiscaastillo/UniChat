@@ -2,6 +2,7 @@
 using MySql.Data.MySqlClient;
 using Mysqlx.Crud;
 using MySqlX.XDevAPI;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -252,22 +253,32 @@ namespace Unichat
             try
             {
                 client = new TcpClient();
-
-                // Conectar al servidor
-                await client.ConnectAsync("127.0.0.1", 9000);
+                await client.ConnectAsync("10.103.151.13", 9000);
 
                 NetworkStream stream = client.GetStream();
                 reader = new StreamReader(stream, Encoding.UTF8);
                 writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                // Enviar autenticación al servidor
-                await writer.WriteLineAsync($"{usernameTCP}#{CurrentUser.IdUser} has joined");
-
-                return true;
+                // Enviar LOGIN usando JSON (sin password, ya autenticamos localmente)
+                var loginRequest = new ClientRequest
+                {
+                    Command = "LOGIN",
+                    Username = usernameTCP,
+                    Password = "" // Password vacío porque ya autenticamos contra MySQL
+                };
+                
+                string json = JsonConvert.SerializeObject(loginRequest);
+                await writer.WriteLineAsync(json);
+                
+                // Esperar respuesta del servidor
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+                
+                return response.Type == "LOGIN_SUCCESS";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("No se pudo conectar al servidor: " + ex.Message);
+                MessageBox.Show("Error al conectar: " + ex.Message);
                 return false;
             }
         }
