@@ -7,11 +7,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Unichat;
+using Newtonsoft.Json;
+using WindowsFormsApp3;
 
 namespace UniChat
 {
@@ -160,7 +164,7 @@ namespace UniChat
             this.Hide();
         }
 
-        private void Bconectar_Click_1(object sender, EventArgs e)
+        private async void Bconectar_Click_1(object sender, EventArgs e)
         {
             try
             {
@@ -193,48 +197,74 @@ namespace UniChat
                     return;
                 }
 
-                using (MySqlConnection connection = DbConfig.GetOpenConnection())
+                // Conectar al servidor y enviar comando REGISTER
+                bool registered = await RegisterOnServerAsync(username, password);
+
+                if (registered)
                 {
-                    // Verificar si el usuario ya existe
-                    string queryCheck = "SELECT COUNT(*) FROM users WHERE username = @username";
-                    using (MySqlCommand cmdCheck = new MySqlCommand(queryCheck, connection))
-                    {
-                        cmdCheck.Parameters.AddWithValue("@username", username);
-                        int userCount = Convert.ToInt32(cmdCheck.ExecuteScalar());
-
-                        if (userCount > 0)
-                        {
-                            MessageBox.Show("El usuario ya existe.");
-                            return;
-                        }
-                    }
-
-                    // Hashear la contraseña antes de almacenarla
-                    string hashedPassword = PasswordManager.HashPassword(password);
-
-                    // Insertar nuevo usuario
-                    string queryInsert = "INSERT INTO users (username, passwd, creationDate) VALUES (@username, @passwd, @creationDate)";
-                    using (MySqlCommand cmdInsert = new MySqlCommand(queryInsert, connection))
-                    {
-                        cmdInsert.Parameters.AddWithValue("@username", username);
-                        cmdInsert.Parameters.AddWithValue("@passwd", hashedPassword);
-                        cmdInsert.Parameters.AddWithValue("@creationDate", DateTime.Now);
-
-                        int result = cmdInsert.ExecuteNonQuery();
-                        
-                        if (result > 0) 
-                        {
-                            MessageBox.Show("Usuario registrado exitosamente.");
-                            FormLogIn Form2 = new FormLogIn();
-                            Form2.Show();
-                            this.Hide();
-                        }
-                    }
+                    MessageBox.Show("Usuario registrado exitosamente.");
+                    FormLogIn Form2 = new FormLogIn();
+                    Form2.Show();
+                    this.Hide();
                 }
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
                 MessageBox.Show("Error al registrar el usuario: " + ex.Message);
+            }
+        }
+
+        private async Task<bool> RegisterOnServerAsync(string username, string password)
+        {
+            TcpClient client = null;
+            StreamReader reader = null;
+            StreamWriter writer = null;
+
+            try
+            {
+                client = new TcpClient();
+                await client.ConnectAsync(ip.text, 9000);
+
+                NetworkStream stream = client.GetStream();
+                reader = new StreamReader(stream, Encoding.UTF8);
+                writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                // Enviar comando REGISTER
+                var registerRequest = new ClientRequest
+                {
+                    Command = "REGISTER",
+                    Username = username,
+                    Password = password
+                };
+
+                string json = JsonConvert.SerializeObject(registerRequest);
+                await writer.WriteLineAsync(json);
+
+                // Esperar respuesta del servidor
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                if (response.Type == "REGISTER_SUCCESS")
+                {
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show(response.Content); // Mostrar error del servidor
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al conectar con el servidor: " + ex.Message);
+                return false;
+            }
+            finally
+            {
+                // Cerrar conexión temporal
+                writer?.Close();
+                reader?.Close();
+                client?.Close();
             }
         }
 

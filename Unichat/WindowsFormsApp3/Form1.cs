@@ -179,92 +179,64 @@ namespace Unichat
         {
             try
             {
-                using (MySqlConnection connection = DbConfig.GetOpenConnection())
+                string username = textBoxUsuario.Text;
+                string password = textBoxContra.Text;
+
+                // Validar entrada
+                if (string.IsNullOrWhiteSpace(username) || username == "Ingrese nombre de usuario" ||
+                    string.IsNullOrWhiteSpace(password) || password == "Ingrese su contraseña")
                 {
-                    string username = textBoxUsuario.Text;
-                    usernameTCP = username;
-                    string password = textBoxContra.Text;
+                    MessageBox.Show("Por favor ingrese usuario y contraseña válidos.");
+                    return;
+                }
 
-                    string query = "SELECT id_user, passwd FROM users WHERE username = @username";
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@username", username);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                int idObtenido = Convert.ToInt32(reader["id_user"]);
-                                string storedHashedPassword = reader["passwd"].ToString();
+                usernameTCP = username;
 
-                                if (!storedHashedPassword.StartsWith("$"))
-                                {
-                                    MessageBox.Show("Su contraseña debe ser actualizada. Contacte al administrador.");
-                                    return;
-                                }
+                // Conectar al servidor y autenticar
+                bool connected = await ConnectToServerAsync(username, password);
 
-                                if (PasswordManager.VerifyPassword(password, storedHashedPassword))
-                                {
-                                    // Guarda el usuario actual (Static Class)
-                                    CurrentUser.SetCurrentUser(idObtenido, username);
+                if (connected)
+                {
+                    MessageBox.Show("LogIn Exitoso");
 
-                                    // Conectar al servidor primero
-                                    bool connected = await ConnectToServerAsync();
-
-                                    if (connected)
-                                    {
-                                        MessageBox.Show("LogIn Exitoso");
-
-                                        // Pasar la conexión TCP al FormChat
-                                        FormChat chatForm = new FormChat(client, this.reader, this.writer);
-                                        chatForm.Show();
-                                        this.Hide();
-                                    }
-                                    else
-                                    {
-                                        MessageBox.Show("No se pudo conectar al servidor de chat.");
-                                    }
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Contraseña incorrecta.");
-                                    textBoxContra.Text = "Vuelva a ingresar su contraseña";
-                                    textBoxContra.ForeColor = Color.Gray;
-                                }
-                            }
-                            else
-                            {
-                                MessageBox.Show("El usuario no existe.");
-                            }
-                        }
-                    }
+                    // Pasar la conexión TCP al FormChat
+                    FormChat chatForm = new FormChat(client, this.reader, this.writer);
+                    chatForm.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    MessageBox.Show("No se pudo conectar al servidor o credenciales incorrectas.");
+                    textBoxContra.Text = "Vuelva a ingresar su contraseña";
+                    textBoxContra.ForeColor = Color.Gray;
                 }
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
-                MessageBox.Show("Error al registrar el usuario: " + ex.Message);
+                MessageBox.Show("Error al intentar iniciar sesión: " + ex.Message);
             }
         }
         private void BBconectar_Click(object sender, EventArgs e) { Bconectar_Click_1(sender, e); }
 
         private void labelUsuario_Click(object sender, EventArgs e){ }
 
-        private async Task<bool> ConnectToServerAsync()
+        private async Task<bool> ConnectToServerAsync(string username, string password)
         {
             try
             {
                 client = new TcpClient();
-                await client.ConnectAsync("10.103.151.13", 9000);
+                await client.ConnectAsync(ip.text, 9000); // Conectar a localhost o IP del servidor
 
                 NetworkStream stream = client.GetStream();
                 reader = new StreamReader(stream, Encoding.UTF8);
                 writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                // Enviar LOGIN usando JSON (sin password, ya autenticamos localmente)
+                // Enviar LOGIN usando JSON con username y password
                 var loginRequest = new ClientRequest
                 {
                     Command = "LOGIN",
-                    Username = usernameTCP,
-                    Password = "" // Password vacío porque ya autenticamos contra MySQL
+                    Username = username,
+                    Password = password // Enviar password para que el servidor autentique
                 };
                 
                 string json = JsonConvert.SerializeObject(loginRequest);
@@ -274,7 +246,18 @@ namespace Unichat
                 string responseJson = await reader.ReadLineAsync();
                 var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
                 
-                return response.Type == "LOGIN_SUCCESS";
+                if (response.Type == "LOGIN_SUCCESS")
+                {
+                    // Guardar información del usuario
+                    int idUser = int.Parse(response.Content);
+                    CurrentUser.SetCurrentUser(idUser, username);
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show(response.Content); // Mostrar error del servidor
+                    return false;
+                }
             }
             catch (Exception ex)
             {

@@ -112,6 +112,7 @@
     <Compile Include="FormEliminarUsuario.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ip.cs" />
     <Compile Include="MessageModels.cs" />
     <Compile Include="PasswordManager.cs" />
     <Compile Include="Form1.cs">

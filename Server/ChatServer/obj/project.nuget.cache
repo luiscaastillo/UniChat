@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FOUDQgWq4nc=",
+  "dgSpecHash": "S2MBjk5ZSqk=",
   "success": true,
-  "projectFilePath": "C:\\Mac\\Home\\Documents\\Code\\ITG\\proyecto_UniChat\\Server\\ChatServer\\ChatServer.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\luiscastillo\\.nuget\\packages\\microsoft.data.sqlite.core\\9.0.10\\microsoft.data.sqlite.core.9.0.10.nupkg.sha512",
-    "C:\\Users\\luiscastillo\\.nuget\\packages\\sqlitepclraw.core\\2.1.10\\sqlitepclraw.core.2.1.10.nupkg.sha512",
-    "C:\\Users\\luiscastillo\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512"
-  ],
+  "projectFilePath": "C:\\Programacion\\Semestre5\\InterfacesG\\UniChat\\Server\\ChatServer\\ChatServer.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }

@@ -146,27 +146,26 @@ namespace UniChat
                     
                     if (response.Type == "NEW_MESSAGE")
                     {
-                        // Solo procesar si no es del usuario actual
+                        // Solo mostrar si no es del usuario actual
                         if (response.Username != CurrentUser.Username)
                         {
-                            // Guardar en base de datos
-                            await Task.Run(() => SaveReceivedMessageFromServer(response.Username, response.Content));
-                            
                             // Mostrar si es el chat activo
                             bool isCurrentChat = false;
                             if (this.InvokeRequired)
                             {
                                 this.Invoke(new Action(() =>
                                 {
-                                    isCurrentChat = treeViewChats.SelectedNode?.Tag != null;
+                                    isCurrentChat = treeViewChats.SelectedNode?.Tag != null &&
+                                                   (int)treeViewChats.SelectedNode.Tag == response.ChatId;
                                 }));
                             }
                             else
                             {
-                                isCurrentChat = treeViewChats.SelectedNode?.Tag != null;
+                                isCurrentChat = treeViewChats.SelectedNode?.Tag != null &&
+                                               (int)treeViewChats.SelectedNode.Tag == response.ChatId;
                             }
 
-                            // 3. Display if it's the active chat
+                            // Display if it's the active chat
                             if (isCurrentChat)
                             {
                                 DateTime timestamp = DateTime.Parse(response.Timestamp);
@@ -174,33 +173,27 @@ namespace UniChat
                             }
                         }
                     }
-                    else if (response.Type == "MESSAGES_LOADED")
+                    else if (response.Type == "MESSAGES_RESPONSE")
                     {
-                        // Cargar mensajes históricos
+                        // Cargar mensajes históricos del servidor
                         if (response.Messages != null)
                         {
-                            foreach (var msg in response.Messages)
+                            this.Invoke(new Action(() =>
                             {
-                                DateTime timestamp = DateTime.Parse(msg.Timestamp);
-                                bool esPropio = msg.Username == CurrentUser.Username;
-                                DisplayMessage(msg.Username, msg.Content, timestamp, esPropio);
-                            }
+                                panelUser.Controls.Clear(); // Limpiar mensajes anteriores
+                                
+                                // Mostrar en orden inverso (más antiguos primero)
+                                for (int i = response.Messages.Count - 1; i >= 0; i--)
+                                {
+                                    var msg = response.Messages[i];
+                                    DateTime timestamp = DateTime.Parse(msg.Timestamp);
+                                    bool esPropio = msg.Username == CurrentUser.Username;
+                                    DisplayMessage(msg.Username, msg.Content, timestamp, esPropio);
+                                }
+                            }));
                         }
                     }
-                    else if (response.Type == "MESSAGES_LOADED")
-                    {
-                        // Cargar mensajes históricos
-                        if (response.Messages != null)
-                        {
-                            foreach (var msg in response.Messages)
-                            {
-                                DateTime timestamp = DateTime.Parse(msg.Timestamp);
-                                bool esPropio = msg.Username == CurrentUser.Username;
-                                DisplayMessage(msg.Username, msg.Content, timestamp, esPropio);
-                            }
-                        }
-                    }
-                    }
+                }
             }
             catch (Exception ex)
             {
@@ -234,20 +227,18 @@ namespace UniChat
                     
                     try
                     {
-                        // 1. Guardar en base de datos local primero
-                        await Task.Run(() => SaveMessageWithMentions(id_chat, mensaje));
-
-                        // 2. Mostrar localmente
+                        // 1. Mostrar localmente primero
                         string username = CurrentUser.Username;
                         DateTime fecha = DateTime.Now;
                         DisplayMessage(username, mensaje, fecha, true);
                         
-                        // 3. Enviar al servidor usando JSON
+                        // 2. Enviar al servidor usando JSON
                         if (isConnected && writer != null)
                         {
                             var request = new ClientRequest
                             {
                                 Command = "SEND_MESSAGE",
+                                Username = CurrentUser.Username,
                                 Content = mensaje,
                                 ChatId = id_chat
                             };
@@ -257,7 +248,7 @@ namespace UniChat
                             await writer.FlushAsync();
                         }
                         
-                        // 4. Limpiar input
+                        // 3. Limpiar input
                         RichMessage.Clear();
                         RichMessage.Text = "";
                         RichMessage.ForeColor = Color.Gray;
@@ -436,7 +427,10 @@ namespace UniChat
             RichMessage.Enter += RichMessage_Enter;
             RichMessage.Leave += RichMessage_Leave;
             RichMessage.KeyDown += RichMessage_KeyDown;
-            CargarChatsUsuario(treeViewChats);
+            
+            // Cargar chats desde base de datos local
+            CargarChatsUsuarioLocal(treeViewChats);
+            
             labelUsername.Text = CurrentUser.Username;
             panelEmoji.Visible = false;
         }
@@ -584,8 +578,54 @@ namespace UniChat
             if (e.Node.Tag != null)
             {
                 int idChatSeleccionado = (int)e.Node.Tag;
+                // Usar métodos locales para evitar conflicto con el reader del servidor
                 CargarMensajesChat(idChatSeleccionado);
                 CargarChatMembers(idChatSeleccionado);
+            }
+        }
+
+        private async Task CargarChatMembersDesdeServidor(int id_chat)
+        {
+            if (!isConnected || writer == null) return;
+
+            try
+            {
+                var request = new ClientRequest
+                {
+                    Command = "GET_CHAT_MEMBERS",
+                    ChatId = id_chat
+                };
+
+                string json = JsonConvert.SerializeObject(request);
+                await writer.WriteLineAsync(json);
+                await writer.FlushAsync();
+
+                // Esperar respuesta
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                if (response.Type == "MEMBERS_RESPONSE" && response.Messages != null)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        treeViewUsers.Nodes.Clear();
+                        foreach (var member in response.Messages)
+                        {
+                            // member.Content tiene formato "id_user|username"
+                            string[] parts = member.Content.Split('|');
+                            if (parts.Length == 2)
+                            {
+                                string username = parts[1];
+                                TreeNode userNode = new TreeNode(username);
+                                treeViewUsers.Nodes.Add(userNode);
+                            }
+                        }
+                    }));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar miembros: " + ex.Message);
             }
         }
 
@@ -649,6 +689,34 @@ namespace UniChat
                 EmojiImages[":pray:"] = ResizeImage(pray.Image, 22, 22);
                 EmojiImages[":ajajaj:"] = ResizeImage(ajajaja.Image, 22, 22);
                 EmojiImages[":cool:"] = ResizeImage(cool.Image, 22, 22);
+            }
+        }
+
+        private async Task CargarMensajesDesdeServidor(int id_chat)
+        {
+            if (!isConnected || writer == null) return;
+
+            try
+            {
+                InicializarEmojiImages();
+                panelUser.Controls.Clear();
+
+                var request = new ClientRequest
+                {
+                    Command = "GET_MESSAGES",
+                    ChatId = id_chat,
+                    Count = 100
+                };
+
+                string json = JsonConvert.SerializeObject(request);
+                await writer.WriteLineAsync(json);
+                await writer.FlushAsync();
+
+                // La respuesta se procesará en ReceiveMessages()
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar mensajes: " + ex.Message);
             }
         }
 
@@ -746,7 +814,58 @@ namespace UniChat
             }
         }
 
-        public void CargarChatsUsuario(TreeView treeView)
+        public async void CargarChatsUsuario(TreeView treeView)
+        {
+            if (!isConnected || writer == null)
+            {
+                // Si no hay conexión, usar método local (fallback)
+                CargarChatsUsuarioLocal(treeView);
+                return;
+            }
+
+            try
+            {
+                var request = new ClientRequest
+                {
+                    Command = "GET_CHATS",
+                    Username = CurrentUser.Username
+                };
+
+                string json = JsonConvert.SerializeObject(request);
+                await writer.WriteLineAsync(json);
+                await writer.FlushAsync();
+
+                // Esperar respuesta
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                if (response.Type == "CHATS_RESPONSE" && response.Messages != null)
+                {
+                    treeView.Nodes.Clear();
+                    panelUser.Controls.Clear();
+
+                    foreach (var chat in response.Messages)
+                    {
+                        // chat.Content tiene formato "id_chat|chat_name"
+                        string[] parts = chat.Content.Split('|');
+                        if (parts.Length == 2)
+                        {
+                            int idChat = int.Parse(parts[0]);
+                            string nombreChat = parts[1];
+                            TreeNode nodo = new TreeNode(nombreChat);
+                            nodo.Tag = idChat;
+                            treeView.Nodes.Add(nodo);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar chats: " + ex.Message);
+            }
+        }
+
+        private void CargarChatsUsuarioLocal(TreeView treeView)
         {
             treeView.Nodes.Clear();
             panelUser.Controls.Clear();
