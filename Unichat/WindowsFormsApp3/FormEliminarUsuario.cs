@@ -1,9 +1,13 @@
-using MySql.Data.MySqlClient;
 using System;
 using System.Drawing;
+using System.IO;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsFormsApp3;
 using Unichat;
+using Newtonsoft.Json;
 
 namespace UniChat
 {
@@ -92,33 +96,51 @@ namespace UniChat
             this.Controls.Add(btnEliminar);
         }
 
-        private void CargarUsuariosDelChat()
+        private async void CargarUsuariosDelChat()
         {
             listViewUsuarios.Items.Clear();
 
             try
             {
-                using (var connection = DbConfig.GetOpenConnection())
+                TcpClient client = new TcpClient();
+                await client.ConnectAsync(ip.text, 9000);
+
+                NetworkStream stream = client.GetStream();
+                StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                // Solicitar miembros del chat
+                var request = new ClientRequest
                 {
-                    // Query to get users in the current chat
-                    string query = @"
-                    SELECT u.id_user, u.username 
-                    FROM users u 
-                    INNER JOIN chat_members cm ON u.id_user = cm.id_user
-                    WHERE cm.id_chat = @id_chat AND u.id_user <> @current_user_id";
+                    Command = "GET_CHAT_MEMBERS",
+                    ChatId = id_chat
+                };
 
-                    using (var cmd = new MySqlCommand(query, connection))
+                string json = JsonConvert.SerializeObject(request);
+                await writer.WriteLineAsync(json);
+
+                // Esperar respuesta
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                writer.Close();
+                reader.Close();
+                client.Close();
+
+                if (response.Type == "MEMBERS_RESPONSE" && response.Messages != null)
+                {
+                    foreach (var member in response.Messages)
                     {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-                        cmd.Parameters.AddWithValue("@current_user_id", CurrentUser.IdUser);  // Exclude current user
-
-                        using (var reader = cmd.ExecuteReader())
+                        // member.Content tiene formato "id_user|username"
+                        string[] parts = member.Content.Split('|');
+                        if (parts.Length == 2)
                         {
-                            while (reader.Read())
-                            {
-                                int id_user = Convert.ToInt32(reader["id_user"]);
-                                string username = reader["username"].ToString();
+                            int id_user = int.Parse(parts[0]);
+                            string username = parts[1];
 
+                            // Excluir al usuario actual
+                            if (id_user != CurrentUser.IdUser)
+                            {
                                 ListViewItem item = new ListViewItem(id_user.ToString());
                                 item.SubItems.Add(username);
                                 listViewUsuarios.Items.Add(item);
@@ -127,13 +149,13 @@ namespace UniChat
                     }
                 }
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
                 MessageBox.Show("Error al cargar usuarios: " + ex.Message);
             }
         }
 
-        private void BtnEliminar_Click(object sender, EventArgs e)
+        private async void BtnEliminar_Click(object sender, EventArgs e)
         {
             if (listViewUsuarios.SelectedItems.Count == 0)
             {
@@ -146,8 +168,8 @@ namespace UniChat
 
             // Confirm removal
             var result = MessageBox.Show(
-                $"¿Estás seguro que deseas eliminar a {username} del chat?", 
-                "Confirmar eliminación", 
+                $"Â¿EstÃ¡s seguro que deseas eliminar a {username} del chat?", 
+                "Confirmar eliminaciÃ³n", 
                 MessageBoxButtons.YesNo, 
                 MessageBoxIcon.Question);
 
@@ -155,23 +177,44 @@ namespace UniChat
             {
                 try
                 {
-                    using (var connection = DbConfig.GetOpenConnection())
-                    {
-                        // Remove user from the chat
-                        string deleteQuery = "DELETE FROM chat_members WHERE id_chat = @id_chat AND id_user = @id_user";
-                        using (var cmd = new MySqlCommand(deleteQuery, connection))
-                        {
-                            cmd.Parameters.AddWithValue("@id_chat", id_chat);
-                            cmd.Parameters.AddWithValue("@id_user", id_user);
-                            cmd.ExecuteNonQuery();
-                        }
+                    TcpClient client = new TcpClient();
+                    await client.ConnectAsync(ip.text, 9000);
 
+                    NetworkStream stream = client.GetStream();
+                    StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                    StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                    // Enviar comando REMOVE_USER_FROM_CHAT
+                    var request = new ClientRequest
+                    {
+                        Command = "REMOVE_USER_FROM_CHAT",
+                        Username = username,
+                        ChatId = id_chat
+                    };
+
+                    string json = JsonConvert.SerializeObject(request);
+                    await writer.WriteLineAsync(json);
+
+                    // Esperar respuesta
+                    string responseJson = await reader.ReadLineAsync();
+                    var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                    writer.Close();
+                    reader.Close();
+                    client.Close();
+
+                    if (response.Type == "USER_REMOVED")
+                    {
                         MessageBox.Show($"Usuario {username} eliminado del chat correctamente.");
                         this.DialogResult = DialogResult.OK;
                         this.Close();
                     }
+                    else
+                    {
+                        MessageBox.Show(response.Content);
+                    }
                 }
-                catch (MySqlException ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Error al eliminar usuario del chat: " + ex.Message);
                 }

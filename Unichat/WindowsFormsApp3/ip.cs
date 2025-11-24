@@ -8,6 +8,6 @@ namespace WindowsFormsApp3
 {
     public static class ip
     {
-        public static String text = "10.103.12.185";
+        public static String text = "192.168.18.145";
     }
 }

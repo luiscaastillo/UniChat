@@ -1,13 +1,16 @@
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsFormsApp3;
 using Unichat;
-
+using Newtonsoft.Json;
 
 namespace UniChat
 {
@@ -20,7 +23,7 @@ namespace UniChat
         {
             InitializeComponent();
             this.id_chat = id_chat;
-            this.Text = "AÒadir Usuario al Chat";
+            this.Text = "AÔøΩadir Usuario al Chat";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -54,7 +57,7 @@ namespace UniChat
             // Create controls
             Label lblTitulo = new Label
             {
-                Text = "Selecciona un usuario para aÒadir al chat",
+                Text = "Selecciona un usuario para aÔøΩadir al chat",
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 Location = new Point(20, 20),
@@ -75,10 +78,11 @@ namespace UniChat
             };
             listViewUsuarios.Columns.Add("ID", 0);
             listViewUsuarios.Columns.Add("Usuario", 355);
+            listViewUsuarios.DoubleClick += (s, e) => BtnAnadir_Click(s, e);
 
             Button btnAnadir = new Button
             {
-                Text = "AÒadir",
+                Text = "AÔøΩadir",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 Location = new Point(150, 370),
                 Size = new Size(100, 35),
@@ -95,80 +99,155 @@ namespace UniChat
             this.Controls.Add(btnAnadir);
         }
 
-        private void CargarUsuarios()
+        private async void CargarUsuarios()
         {
             listViewUsuarios.Items.Clear();
 
             try
             {
-                using (var connection = DbConfig.GetOpenConnection())
+                TcpClient client = new TcpClient();
+                await client.ConnectAsync(ip.text, 9000);
+
+                NetworkStream stream = client.GetStream();
+                StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                // Solicitar miembros del chat para excluirlos
+                var membersRequest = new ClientRequest
                 {
-                    // Query to get users not in the current chat
-                    string query = @"
-                    SELECT id_user, username 
-                    FROM users 
-                    WHERE id_user NOT IN (
-                        SELECT id_user 
-                        FROM chat_members 
-                        WHERE id_chat = @id_chat
-                    )";
+                    Command = "GET_CHAT_MEMBERS",
+                    ChatId = id_chat
+                };
 
-                    using (var cmd = new MySqlCommand(query, connection))
+                string jsonMembers = JsonConvert.SerializeObject(membersRequest);
+                await writer.WriteLineAsync(jsonMembers);
+
+                string membersResponseJson = await reader.ReadLineAsync();
+                var membersResponse = JsonConvert.DeserializeObject<ServerResponse>(membersResponseJson);
+
+                HashSet<string> membersInChat = new HashSet<string>();
+                if (membersResponse.Type == "MEMBERS_RESPONSE" && membersResponse.Messages != null)
+                {
+                    foreach (var member in membersResponse.Messages)
                     {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-
-                        using (var reader = cmd.ExecuteReader())
+                        string[] parts = member.Content.Split('|');
+                        if (parts.Length == 2)
                         {
-                            while (reader.Read())
-                            {
-                                int id_user = Convert.ToInt32(reader["id_user"]);
-                                string username = reader["username"].ToString();
+                            membersInChat.Add(parts[0]); // id_user
+                        }
+                    }
+                }
 
-                                ListViewItem item = new ListViewItem(id_user.ToString());
+                // Solicitar todos los usuarios
+                var usersRequest = new ClientRequest
+                {
+                    Command = "GET_ALL_USERS"
+                };
+
+                string jsonUsers = JsonConvert.SerializeObject(usersRequest);
+                await writer.WriteLineAsync(jsonUsers);
+
+                string usersResponseJson = await reader.ReadLineAsync();
+                var usersResponse = JsonConvert.DeserializeObject<ServerResponse>(usersResponseJson);
+
+                if (usersResponse.Type == "USERS_RESPONSE" && usersResponse.Messages != null)
+                {
+                    foreach (var user in usersResponse.Messages)
+                    {
+                        string[] parts = user.Content.Split('|');
+                        if (parts.Length == 2)
+                        {
+                            string id_user = parts[0];
+                            string username = parts[1];
+
+                            // Excluir usuarios que ya est√°n en el chat
+                            if (!membersInChat.Contains(id_user))
+                            {
+                                ListViewItem item = new ListViewItem(id_user);
                                 item.SubItems.Add(username);
                                 listViewUsuarios.Items.Add(item);
                             }
                         }
                     }
                 }
+
+                writer.Close();
+                reader.Close();
+                client.Close();
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
                 MessageBox.Show("Error al cargar usuarios: " + ex.Message);
             }
         }
 
-        private void BtnAnadir_Click(object sender, EventArgs e)
+        private async void BtnAnadir_Click(object sender, EventArgs e)
         {
-            if (listViewUsuarios.SelectedItems.Count == 0)
+            if (listViewUsuarios.SelectedItems.Count == 0 || listViewUsuarios.SelectedItems[0] == null)
             {
-                MessageBox.Show("Selecciona un usuario para aÒadir.");
+                MessageBox.Show("Selecciona un usuario para a√±adir.");
                 return;
             }
 
-            int id_user = Convert.ToInt32(listViewUsuarios.SelectedItems[0].Text);
+            var selectedItem = listViewUsuarios.SelectedItems[0];
+            
+            if (selectedItem.SubItems.Count < 2)
+            {
+                MessageBox.Show("Error: datos de usuario incompletos.");
+                return;
+            }
+
+            int id_user;
+            if (!int.TryParse(selectedItem.Text, out id_user))
+            {
+                MessageBox.Show("Error: ID de usuario inv√°lido.");
+                return;
+            }
+            
+            string username = selectedItem.SubItems[1].Text;
 
             try
             {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    // Add user to the chat
-                    string insertQuery = "INSERT INTO chat_members (id_chat, id_user) VALUES (@id_chat, @id_user)";
-                    using (var cmd = new MySqlCommand(insertQuery, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-                        cmd.Parameters.AddWithValue("@id_user", id_user);
-                        cmd.ExecuteNonQuery();
-                    }
+                TcpClient client = new TcpClient();
+                await client.ConnectAsync(ip.text, 9000);
 
-                    MessageBox.Show("Usuario aÒadido al chat correctamente.");
+                NetworkStream stream = client.GetStream();
+                StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                // Enviar comando ADD_USER_TO_CHAT
+                var request = new ClientRequest
+                {
+                    Command = "ADD_USER_TO_CHAT",
+                    Username = username,
+                    ChatId = id_chat
+                };
+
+                string json = JsonConvert.SerializeObject(request);
+                await writer.WriteLineAsync(json);
+
+                // Esperar respuesta
+                string responseJson = await reader.ReadLineAsync();
+                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                writer.Close();
+                reader.Close();
+                client.Close();
+
+                if (response.Type == "USER_ADDED")
+                {
+                    MessageBox.Show("Usuario a√±adido al chat correctamente.");
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
+                else
+                {
+                    MessageBox.Show(response.Content);
+                }
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
-                MessageBox.Show("Error al aÒadir usuario al chat: " + ex.Message);
+                MessageBox.Show("Error al a√±adir usuario al chat: " + ex.Message);
             }
         }
     }

@@ -1,12 +1,5 @@
-﻿using BCrypt.Net;
-using MySql.Data.MySqlClient;
-using Mysqlx.Crud;
-using MySqlX.XDevAPI;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -18,7 +11,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using UniChat;
 using WindowsFormsApp3;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Unichat
 {

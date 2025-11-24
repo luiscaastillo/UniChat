@@ -164,6 +164,9 @@ namespace Unichat
                 case "DELETE_CHAT":
                     return await HandleDeleteChat(request);
 
+                case "GET_ALL_USERS":
+                    return await HandleGetAllUsers(request);
+
                 default:
                     return new ServerResponse
                     {
@@ -266,11 +269,12 @@ namespace Unichat
                     string hashedPassword = PasswordManager.HashPassword(request.Password);
 
                     // Insertar nuevo usuario
-                    string insertQuery = "INSERT INTO users (username, passwd) VALUES (@username, @passwd)";
+                    string insertQuery = "INSERT INTO users (username, passwd, creationDate) VALUES (@username, @passwd, @creationDate)";
                     using (MySqlCommand insertCommand = new MySqlCommand(insertQuery, connection))
                     {
                         insertCommand.Parameters.AddWithValue("@username", request.Username);
                         insertCommand.Parameters.AddWithValue("@passwd", hashedPassword);
+                        insertCommand.Parameters.AddWithValue("@creationDate", DateTime.Now);
                         await insertCommand.ExecuteNonQueryAsync();
                     }
 
@@ -574,13 +578,13 @@ namespace Unichat
             {
                 using (MySqlConnection connection = DbConfig.GetOpenConnection())
                 {
-                    // request.Content contiene el username del usuario a añadir
+                    // request.Username contiene el username del usuario a añadir
                     // Obtener id_user del username
                     string getUserQuery = "SELECT id_user FROM users WHERE username = @username";
                     int idUser;
                     using (MySqlCommand getUserCmd = new MySqlCommand(getUserQuery, connection))
                     {
-                        getUserCmd.Parameters.AddWithValue("@username", request.Content);
+                        getUserCmd.Parameters.AddWithValue("@username", request.Username);
                         object result = await getUserCmd.ExecuteScalarAsync();
                         if (result == null)
                         {
@@ -624,13 +628,13 @@ namespace Unichat
             {
                 using (MySqlConnection connection = DbConfig.GetOpenConnection())
                 {
-                    // request.Content contiene el username del usuario a eliminar
+                    // request.Username contiene el username del usuario a eliminar
                     // Obtener id_user del username
                     string getUserQuery = "SELECT id_user FROM users WHERE username = @username";
                     int idUser;
                     using (MySqlCommand getUserCmd = new MySqlCommand(getUserQuery, connection))
                     {
-                        getUserCmd.Parameters.AddWithValue("@username", request.Content);
+                        getUserCmd.Parameters.AddWithValue("@username", request.Username);
                         object result = await getUserCmd.ExecuteScalarAsync();
                         if (result == null)
                         {
@@ -756,6 +760,46 @@ namespace Unichat
                 {
                     Type = "ERROR",
                     Content = "Error al eliminar chat: " + ex.Message
+                };
+            }
+        }
+
+        private static async Task<ServerResponse> HandleGetAllUsers(ClientRequest request)
+        {
+            try
+            {
+                using (MySqlConnection connection = DbConfig.GetOpenConnection())
+                {
+                    string query = "SELECT id_user, username FROM users ORDER BY username";
+
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        var users = new List<MessageData>();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                users.Add(new MessageData
+                                {
+                                    Content = $"{reader["id_user"]}|{reader["username"]}"
+                                });
+                            }
+                        }
+
+                        return new ServerResponse
+                        {
+                            Type = "USERS_RESPONSE",
+                            Messages = users
+                        };
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                return new ServerResponse
+                {
+                    Type = "ERROR",
+                    Content = "Error al obtener usuarios: " + ex.Message
                 };
             }
         }

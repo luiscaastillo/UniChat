@@ -1,5 +1,4 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -372,46 +371,8 @@ namespace UniChat
 
         private void SaveReceivedMessageFromServer(string username, string content)
         {
-            try
-            {
-                if (treeViewChats.SelectedNode?.Tag == null) return;
-                
-                int id_chat = (int)treeViewChats.SelectedNode.Tag;
-                
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    string getUserQuery = "SELECT id_user FROM users WHERE username = @username LIMIT 1";
-                    int senderId = 0;
-                    
-                    using (var cmdUser = new MySqlCommand(getUserQuery, connection))
-                    {
-                        cmdUser.Parameters.AddWithValue("@username", username);
-                        var result = cmdUser.ExecuteScalar();
-                        if (result != null)
-                        {
-                            senderId = Convert.ToInt32(result);
-                        }
-                    }
-
-                    if (senderId > 0)
-                    {
-                        string insertQuery = @"INSERT INTO messages (content, sendingDate, id_user, id_chat) 
-                                              VALUES (@content, NOW(), @senderId, @id_chat)";
-                        
-                        using (var cmdInsert = new MySqlCommand(insertQuery, connection))
-                        {
-                            cmdInsert.Parameters.AddWithValue("@id_chat", id_chat);
-                            cmdInsert.Parameters.AddWithValue("@senderId", senderId);
-                            cmdInsert.Parameters.AddWithValue("@content", content);
-                            cmdInsert.ExecuteNonQuery();
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error al guardar mensaje: " + ex.Message);
-            }
+            // El servidor ya guarda los mensajes, el cliente solo muestra
+            // No es necesario guardar en la base de datos local
         }
 
         // ... [Mantén todos los demás métodos existentes: FormChat_Load, RichMessage_KeyDown, 
@@ -428,8 +389,8 @@ namespace UniChat
             RichMessage.Leave += RichMessage_Leave;
             RichMessage.KeyDown += RichMessage_KeyDown;
             
-            // Cargar chats desde base de datos local
-            CargarChatsUsuarioLocal(treeViewChats);
+            // Cargar chats desde el servidor
+            CargarChatsUsuario(treeViewChats);
             
             labelUsername.Text = CurrentUser.Username;
             panelEmoji.Visible = false;
@@ -477,24 +438,8 @@ namespace UniChat
 
         private void SaveMessageWithMentions(int id_chat, string message)
         {
-            try
-            {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    string msgQuery = "INSERT INTO messages (content, sendingDate, id_user, id_chat ) VALUES  (@message, NOW(), @senderId, @id_chat)";
-                    using (var cmd = new MySqlCommand(msgQuery, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-                        cmd.Parameters.AddWithValue("@senderId", CurrentUser.IdUser);
-                        cmd.Parameters.AddWithValue("@message", message);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Error al guardar el mensaje: " + ex.Message);
-            }
+            // El servidor ya guarda los mensajes cuando se envían
+            // Este método ya no es necesario con la arquitectura cliente-servidor
         }
 
         private void BEmoji_Click(object sender, EventArgs e)
@@ -573,54 +518,63 @@ namespace UniChat
             }
         }
 
-        private void treeViewChats_AfterSelect(object sender, TreeViewEventArgs e)
+        private async void treeViewChats_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (e.Node.Tag != null)
             {
                 int idChatSeleccionado = (int)e.Node.Tag;
-                // Usar métodos locales para evitar conflicto con el reader del servidor
-                CargarMensajesChat(idChatSeleccionado);
-                CargarChatMembers(idChatSeleccionado);
+                // Cargar mensajes y miembros desde el servidor
+                await CargarMensajesDesdeServidor(idChatSeleccionado);
+                await CargarChatMembersDesdeServidor(idChatSeleccionado);
             }
         }
 
         private async Task CargarChatMembersDesdeServidor(int id_chat)
         {
-            if (!isConnected || writer == null) return;
-
             try
             {
-                var request = new ClientRequest
+                // Usar conexión temporal para consultas GET
+                using (TcpClient tempClient = new TcpClient())
                 {
-                    Command = "GET_CHAT_MEMBERS",
-                    ChatId = id_chat
-                };
+                    await tempClient.ConnectAsync(ip.text, 9000);
+                    NetworkStream stream = tempClient.GetStream();
+                    StreamReader tempReader = new StreamReader(stream, Encoding.UTF8);
+                    StreamWriter tempWriter = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                string json = JsonConvert.SerializeObject(request);
-                await writer.WriteLineAsync(json);
-                await writer.FlushAsync();
-
-                // Esperar respuesta
-                string responseJson = await reader.ReadLineAsync();
-                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
-
-                if (response.Type == "MEMBERS_RESPONSE" && response.Messages != null)
-                {
-                    this.Invoke(new Action(() =>
+                    var request = new ClientRequest
                     {
-                        treeViewUsers.Nodes.Clear();
-                        foreach (var member in response.Messages)
+                        Command = "GET_CHAT_MEMBERS",
+                        ChatId = id_chat
+                    };
+
+                    string json = JsonConvert.SerializeObject(request);
+                    await tempWriter.WriteLineAsync(json);
+
+                    // Esperar respuesta
+                    string responseJson = await tempReader.ReadLineAsync();
+                    var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                    if (response.Type == "MEMBERS_RESPONSE" && response.Messages != null)
+                    {
+                        this.Invoke(new Action(() =>
                         {
-                            // member.Content tiene formato "id_user|username"
-                            string[] parts = member.Content.Split('|');
-                            if (parts.Length == 2)
+                            treeViewUsers.Nodes.Clear();
+                            foreach (var member in response.Messages)
                             {
-                                string username = parts[1];
-                                TreeNode userNode = new TreeNode(username);
-                                treeViewUsers.Nodes.Add(userNode);
+                                // member.Content tiene formato "id_user|username"
+                                string[] parts = member.Content.Split('|');
+                                if (parts.Length == 2)
+                                {
+                                    string username = parts[1];
+                                    TreeNode userNode = new TreeNode(username);
+                                    treeViewUsers.Nodes.Add(userNode);
+                                }
                             }
-                        }
-                    }));
+                        }));
+                    }
+
+                    tempWriter.Close();
+                    tempReader.Close();
                 }
             }
             catch (Exception ex)
@@ -629,36 +583,7 @@ namespace UniChat
             }
         }
 
-        private void CargarChatMembers(int id_chat)
-        {
-            treeViewUsers.Nodes.Clear();
-            try
-            {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    string query = @"SELECT u.username FROM users u
-                                    INNER JOIN chat_members cm ON u.id_user = cm.id_user
-                                    WHERE cm.id_chat = @id_chat";
-                    using (var cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string username = reader["username"].ToString();
-                                TreeNode userNode = new TreeNode(username);
-                                treeViewUsers.Nodes.Add(userNode);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Error al cargar los miembros del chat: " + ex.Message);
-            }
-        }
+        // Método eliminado: usar CargarChatMembersDesdeServidor en su lugar
 
         private void InicializarEmojiImages()
         {
@@ -694,25 +619,46 @@ namespace UniChat
 
         private async Task CargarMensajesDesdeServidor(int id_chat)
         {
-            if (!isConnected || writer == null) return;
-
             try
             {
                 InicializarEmojiImages();
                 panelUser.Controls.Clear();
 
-                var request = new ClientRequest
+                // Usar conexión temporal para consultas GET
+                using (TcpClient tempClient = new TcpClient())
                 {
-                    Command = "GET_MESSAGES",
-                    ChatId = id_chat,
-                    Count = 100
-                };
+                    await tempClient.ConnectAsync(ip.text, 9000);
+                    NetworkStream stream = tempClient.GetStream();
+                    StreamReader tempReader = new StreamReader(stream, Encoding.UTF8);
+                    StreamWriter tempWriter = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                string json = JsonConvert.SerializeObject(request);
-                await writer.WriteLineAsync(json);
-                await writer.FlushAsync();
+                    var request = new ClientRequest
+                    {
+                        Command = "GET_MESSAGES",
+                        ChatId = id_chat,
+                        Count = 100
+                    };
 
-                // La respuesta se procesará en ReceiveMessages()
+                    string json = JsonConvert.SerializeObject(request);
+                    await tempWriter.WriteLineAsync(json);
+
+                    // Esperar respuesta
+                    string responseJson = await tempReader.ReadLineAsync();
+                    var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                    if (response.Type == "MESSAGES_RESPONSE" && response.Messages != null)
+                    {
+                        foreach (var msg in response.Messages)
+                        {
+                            bool esPropio = (msg.Username == CurrentUser.Username);
+                            DateTime timestamp = DateTime.Parse(msg.Timestamp);
+                            DisplayMessage(msg.Username, msg.Content, timestamp, esPropio);
+                        }
+                    }
+
+                    tempWriter.Close();
+                    tempReader.Close();
+                }
             }
             catch (Exception ex)
             {
@@ -720,45 +666,7 @@ namespace UniChat
             }
         }
 
-        private void CargarMensajesChat(int id_chat)
-        {
-            InicializarEmojiImages();
-            foreach (Control ctrl in panelUser.Controls.OfType<Control>().Where(c => (string)c.Tag == "mensaje").ToList())
-            {
-                panelUser.Controls.Remove(ctrl);
-                ctrl.Dispose();
-            }
-
-            try
-            {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    string query = @"SELECT m.content, m.sendingDate, m.id_user, u.username
-                                    FROM messages m INNER JOIN users u ON m.id_user = u.id_user
-                                    WHERE m.id_chat = @id_chat ORDER BY m.sendingDate ASC";
-                    using (var cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id_chat", id_chat);
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string contenido = reader["content"].ToString();
-                                DateTime fecha = Convert.ToDateTime(reader["sendingDate"]);
-                                int idUser = Convert.ToInt32(reader["id_user"]);
-                                string username = reader["username"].ToString();
-                                bool esPropio = (idUser == CurrentUser.IdUser);
-                                DisplayMessage(username, contenido, fecha, esPropio);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Error al cargar los mensajes: " + ex.Message);
-            }
-        }
+        // Método eliminado: usar CargarMensajesDesdeServidor en su lugar
 
         private void DisplayMessage(string username, string mensaje, DateTime fecha, bool esPropio)
         {
@@ -816,47 +724,51 @@ namespace UniChat
 
         public async void CargarChatsUsuario(TreeView treeView)
         {
-            if (!isConnected || writer == null)
-            {
-                // Si no hay conexión, usar método local (fallback)
-                CargarChatsUsuarioLocal(treeView);
-                return;
-            }
-
             try
             {
-                var request = new ClientRequest
+                // Usar conexión temporal para consultas GET
+                using (TcpClient tempClient = new TcpClient())
                 {
-                    Command = "GET_CHATS",
-                    Username = CurrentUser.Username
-                };
+                    await tempClient.ConnectAsync(ip.text, 9000);
+                    NetworkStream stream = tempClient.GetStream();
+                    StreamReader tempReader = new StreamReader(stream, Encoding.UTF8);
+                    StreamWriter tempWriter = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                string json = JsonConvert.SerializeObject(request);
-                await writer.WriteLineAsync(json);
-                await writer.FlushAsync();
-
-                // Esperar respuesta
-                string responseJson = await reader.ReadLineAsync();
-                var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
-
-                if (response.Type == "CHATS_RESPONSE" && response.Messages != null)
-                {
-                    treeView.Nodes.Clear();
-                    panelUser.Controls.Clear();
-
-                    foreach (var chat in response.Messages)
+                    var request = new ClientRequest
                     {
-                        // chat.Content tiene formato "id_chat|chat_name"
-                        string[] parts = chat.Content.Split('|');
-                        if (parts.Length == 2)
+                        Command = "GET_CHATS",
+                        Username = CurrentUser.Username
+                    };
+
+                    string json = JsonConvert.SerializeObject(request);
+                    await tempWriter.WriteLineAsync(json);
+
+                    // Esperar respuesta
+                    string responseJson = await tempReader.ReadLineAsync();
+                    var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                    if (response.Type == "CHATS_RESPONSE" && response.Messages != null)
+                    {
+                        treeView.Nodes.Clear();
+                        panelUser.Controls.Clear();
+
+                        foreach (var chat in response.Messages)
                         {
-                            int idChat = int.Parse(parts[0]);
-                            string nombreChat = parts[1];
-                            TreeNode nodo = new TreeNode(nombreChat);
-                            nodo.Tag = idChat;
-                            treeView.Nodes.Add(nodo);
+                            // chat.Content tiene formato "id_chat|chat_name"
+                            string[] parts = chat.Content.Split('|');
+                            if (parts.Length == 2)
+                            {
+                                int idChat = int.Parse(parts[0]);
+                                string nombreChat = parts[1];
+                                TreeNode nodo = new TreeNode(nombreChat);
+                                nodo.Tag = idChat;
+                                treeView.Nodes.Add(nodo);
+                            }
                         }
                     }
+
+                    tempWriter.Close();
+                    tempReader.Close();
                 }
             }
             catch (Exception ex)
@@ -865,41 +777,9 @@ namespace UniChat
             }
         }
 
-        private void CargarChatsUsuarioLocal(TreeView treeView)
-        {
-            treeView.Nodes.Clear();
-            panelUser.Controls.Clear();
-            try
-            {
-                using (var connection = DbConfig.GetOpenConnection())
-                {
-                    string query = @"SELECT c.id_chat, c.chat_name FROM chats c
-                                    INNER JOIN chat_members cm ON c.id_chat = cm.id_chat
-                                    WHERE cm.id_user = @id_user";
-                    using (var cmd = new MySqlCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@id_user", CurrentUser.IdUser);
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                int idChat = Convert.ToInt32(reader["id_chat"]);
-                                string nombreChat = reader["chat_name"].ToString();
-                                TreeNode nodo = new TreeNode(nombreChat);
-                                nodo.Tag = idChat;
-                                treeView.Nodes.Add(nodo);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Error al cargar los chats: " + ex.Message);
-            }
-        }
+        // Método eliminado: usar CargarChatsUsuario en su lugar
 
-        private void BDeleteChat_Click(object sender, EventArgs e)
+        private async void BDeleteChat_Click(object sender, EventArgs e)
         {
             if (treeViewChats.SelectedNode != null && treeViewChats.SelectedNode.Tag != null)
             {
@@ -909,27 +789,43 @@ namespace UniChat
                 {
                     try
                     {
-                        using (var connection = DbConfig.GetOpenConnection())
+                        // Usar conexión temporal para DELETE
+                        using (TcpClient tempClient = new TcpClient())
                         {
-                            string query = "DELETE FROM chats WHERE id_chat = @id_chat AND admin_id = @admin_id";
-                            using (var cmd = new MySqlCommand(query, connection))
+                            await tempClient.ConnectAsync(ip.text, 9000);
+                            NetworkStream stream = tempClient.GetStream();
+                            StreamReader tempReader = new StreamReader(stream, Encoding.UTF8);
+                            StreamWriter tempWriter = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                            var request = new ClientRequest
                             {
-                                cmd.Parameters.AddWithValue("@id_chat", idChatSeleccionado);
-                                cmd.Parameters.AddWithValue("@admin_id", CurrentUser.IdUser);
-                                int rowsAffected = cmd.ExecuteNonQuery();
-                                if (rowsAffected > 0)
-                                {
-                                    treeViewChats.Nodes.Remove(treeViewChats.SelectedNode);
-                                    MessageBox.Show("Chat eliminado correctamente.");
-                                }
-                                else
-                                {
-                                    MessageBox.Show("No tienes permiso para eliminar este chat o el chat no existe.");
-                                }
+                                Command = "DELETE_CHAT",
+                                Username = CurrentUser.Username,
+                                ChatId = idChatSeleccionado
+                            };
+
+                            string json = JsonConvert.SerializeObject(request);
+                            await tempWriter.WriteLineAsync(json);
+
+                            // Esperar respuesta
+                            string responseJson = await tempReader.ReadLineAsync();
+                            var response = JsonConvert.DeserializeObject<ServerResponse>(responseJson);
+
+                            if (response.Type == "CHAT_DELETED")
+                            {
+                                treeViewChats.Nodes.Remove(treeViewChats.SelectedNode);
+                                MessageBox.Show("Chat eliminado correctamente.");
                             }
+                            else
+                            {
+                                MessageBox.Show(response.Content);
+                            }
+
+                            tempWriter.Close();
+                            tempReader.Close();
                         }
                     }
-                    catch (MySqlException ex)
+                    catch (Exception ex)
                     {
                         MessageBox.Show("Error al eliminar el chat: " + ex.Message);
                     }
@@ -1022,7 +918,7 @@ namespace UniChat
             {
                 if (formAnadirUsuario.ShowDialog() == DialogResult.OK)
                 {
-                    CargarChatMembers(id_chat);
+                    CargarChatMembersDesdeServidor(id_chat);
                 }
             }
         }
@@ -1039,7 +935,7 @@ namespace UniChat
             {
                 if (formEliminarUsuario.ShowDialog() == DialogResult.OK)
                 {
-                    CargarChatMembers(id_chat);
+                    CargarChatMembersDesdeServidor(id_chat);
                 }
             }
         }
