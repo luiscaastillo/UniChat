@@ -242,12 +242,9 @@ namespace Unichat
             }
         }
 
-        private static async Task<ServerResponse> HandleRegister(ClientRequest request)
-        {
-            try
-            {
-                using (MySqlConnection connection = DbConfig.GetOpenConnection())
-                {
+        private static async Task<ServerResponse> HandleRegister(ClientRequest request){
+            try{
+                using (MySqlConnection connection = DbConfig.GetOpenConnection()){
                     // Verificar si el usuario ya existe
                     string checkQuery = "SELECT COUNT(*) FROM users WHERE username = @username";
                     using (MySqlCommand checkCommand = new MySqlCommand(checkQuery, connection))
@@ -507,7 +504,6 @@ namespace Unichat
                 };
             }
         }
-
         private static async Task<ServerResponse> HandleGetChats(ClientRequest request)
         {
             try
@@ -604,6 +600,18 @@ namespace Unichat
                         insertCmd.Parameters.AddWithValue("@id_user", idUser);
                         await insertCmd.ExecuteNonQueryAsync();
                     }
+
+                    // Obtener el nombre del chat para enviarlo en la notificación
+                    string getChatNameQuery = "SELECT chat_name FROM chats WHERE id_chat = @id_chat";
+                    string chatName;
+                    using (MySqlCommand getChatNameCmd = new MySqlCommand(getChatNameQuery, connection))
+                    {
+                        getChatNameCmd.Parameters.AddWithValue("@id_chat", request.ChatId);
+                        chatName = (await getChatNameCmd.ExecuteScalarAsync())?.ToString() ?? "Chat";
+                    }
+
+                    // Notificar al usuario añadido que tiene un nuevo chat
+                    await BroadcastChatAdded(request.Username, request.ChatId ?? 0, chatName);
 
                     return new ServerResponse
                     {
@@ -828,6 +836,37 @@ namespace Unichat
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error broadcasting to client: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        private static async Task BroadcastChatAdded(string targetUsername, int chatId, string chatName)
+        {
+            var broadcastData = new ServerResponse
+            {
+                Type = "CHAT_ADDED",
+                ChatId = chatId,
+                Content = chatName
+            };
+
+            string json = JsonConvert.SerializeObject(broadcastData);
+
+            lock (clientWriters)
+            {
+                foreach (var writer in clientWriters)
+                {
+                    // Solo enviar al usuario específico que fue añadido
+                    if (clientUsernames.TryGetValue(writer, out string username) && username == targetUsername)
+                    {
+                        try
+                        {
+                            writer.WriteLineAsync(json);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error broadcasting chat added to client: {ex.Message}");
+                        }
                     }
                 }
             }

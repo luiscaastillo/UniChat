@@ -192,6 +192,16 @@ namespace UniChat
                             }));
                         }
                     }
+                    else if (response.Type == "CHAT_ADDED")
+                    {
+                        // El usuario fue añadido a un nuevo chat
+                        this.Invoke(new Action(() =>
+                        {
+                            // Recargar la lista de chats
+                            CargarChatsUsuario();
+                            MessageBox.Show($"Has sido añadido al chat: {response.Content}");
+                        }));
+                    }
                 }
             }
             catch (Exception ex)
